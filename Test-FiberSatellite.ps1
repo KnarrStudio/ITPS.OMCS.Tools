@@ -1,4 +1,5 @@
-﻿function Test-FiberSatellite
+﻿#requires -Version 2.0 -Modules NetTCPIP
+function Test-FiberSatellite
 {
   <#
       .SYNOPSIS

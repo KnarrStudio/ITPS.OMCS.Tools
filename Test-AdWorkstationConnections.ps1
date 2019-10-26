@@ -1,4 +1,5 @@
-﻿function Test-AdWorkstationConnections
+﻿#requires -Version 3.0
+function Test-AdWorkstationConnections
 {
 
   [CmdletBinding(SupportsShouldProcess,ConfirmImpact = 'Low')]

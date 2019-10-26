@@ -1,4 +1,5 @@
-﻿function Add-NetworkPrinter
+﻿#requires -Version 3.0 -Modules PrintManagement
+function Add-NetworkPrinter
 {
   <#
     .SYNOPSIS

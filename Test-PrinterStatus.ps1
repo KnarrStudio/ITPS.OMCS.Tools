@@ -1,4 +1,5 @@
-﻿function Test-PrinterStatus
+﻿#requires -Version 3.0 -Modules PrintManagement
+function Test-PrinterStatus
 {
 
   param
