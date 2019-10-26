@@ -11,6 +11,7 @@
 . $PSScriptRoot\Add-NetworkPrinter.ps1
 . $PSScriptRoot\Compare-Folders.ps1
 . $PSScriptRoot\Get-InstalledSoftware.ps1
+. $PSScriptRoot\Get-UpTime.ps1
 . $PSScriptRoot\New-TimedStampFileName.ps1
 . $PSScriptRoot\Repair-FolderRedirection.ps1
 . $PSScriptRoot\Test-AdWorkstationConnections.ps1
