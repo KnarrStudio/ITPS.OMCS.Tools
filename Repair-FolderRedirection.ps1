@@ -1,15 +1,27 @@
 ﻿#requires -Version 3.0
 function Repair-FolderRedirection
 {
-  #Content
   <#
-      .Synopsis
-      Changes the Location on the Profile folders to match network profile
-      
-      .EXAMPLE
-      Repair-FolderRedirection
+      .SYNOPSIS
+      Changes the folder redirectionsettings in the registry.  This should be run prior to imaging a user's workstaion.
+
+      .DESCRIPTION
+      The script with verify that the path exists, and copies all of the local files to the "Remote" location, then changes the registry to mach that remote location.
+
+      .PARAMETER RemotePath
+      Makes changes and repairs the path to the home folders.
+
+      .PARAMETER TestSettings
+      Makes no changes but allows you to varify the settings.
+
       .EXAMPLE
       Repair-FolderRedirection -RemotePath 'H:\_MyComputer'
+      This will redirect the folders to the path on the "H:" drive.
+
+      .EXAMPLE
+      Repair-FolderRedirection -TestSettings
+      Sends the current settings to the screen
+      
   #>
   
   [CmdletBinding(SupportsShouldProcess,ConfirmImpact = 'High')]
@@ -17,14 +29,18 @@ function Repair-FolderRedirection
   Param
   (
     # $RemotePath Path to the Users's 'H:' drive
-    [Parameter(Mandatory = $false,ValueFromPipelineByPropertyName,Position = 0)]
+    [Parameter(ParameterSetName = 'Repair',ValueFromPipelineByPropertyName,Position = 0)]
     [string]$RemotePath = "$env:HOMEDRIVE\_MyComputer",
-    [Parameter(Mandatory = $false,    Position = 1)]
-    [Switch]$TestPath
+    [Parameter(ParameterSetName = 'Repair')]
+    [Switch]$go,
+    [Parameter (ParameterSetName = 'TestSettings')]
+    [Switch]$TestSettings
   )
   
   Begin
   {
+    $CompareList = @()
+
     $FolderList = @{
       'Desktop'   = 'Desktop'
       'Favorites' = 'Favorites'
@@ -32,6 +48,11 @@ function Repair-FolderRedirection
       'My Pictures' = 'Pictures'
       'My Video'  = 'Videos'
       'Personal'  = 'Documents'
+    }
+    
+    $WhatIfPreference = $true
+    if($go){
+    $WhatIfPreference = $false
     }
 
     $Keys = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders', 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
@@ -52,7 +73,7 @@ function Repair-FolderRedirection
       If(-Not(Test-Path -Path $NewPath ))
       {
         Write-Verbose -Message ('NewPath = {0}' -f $NewPath)
-        if(-Not $TestPath)
+        if(-Not $TestSettings)
         {
           New-Item -Path $NewPath -ItemType Directory
         }
@@ -61,7 +82,7 @@ function Repair-FolderRedirection
       Write-Verbose -Message ('OldPath = {0}' -f $OldPath)
       try
       {
-        if(-Not $TestPath)
+       if(-Not $TestSettings)
         {
           Copy-Item -Path $OldPath -Destination $RemotePath -Force -Recurse -ErrorAction Stop
         }
@@ -75,42 +96,35 @@ function Repair-FolderRedirection
       {
         Write-Verbose -Message ('FolderKey = {0}' -f $FolderKey)
         Write-Verbose -Message ('FolderName = {0}' -f $FolderName)
-
         Write-Verbose -Message ('RegKey = {0}' -f $RegKey)
-        Get-ItemProperty -Path $RegKey -Name $FolderKey
+        
 
-        #Test Path - Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+        $LeafKey = Split-Path -Path $RegKey -Leaf
+        $CurrentSettings = Get-ItemProperty -Path $RegKey -Name $FolderKey
+        $newlist = ('{2}: {0} = {1}' -f $FolderKey, $CurrentSettings.$FolderKey, $LeafKey)
+        Write-Verbose -Message $newlist
+        $CompareList += $newlist
+       
+        <# F8 Testing::
 
-        if(-Not $TestPath)
+            $Key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+            Get-ItemProperty -Path $key
+       
+        ::Testing #>
+
+        if(-Not $TestSettings)
         {
           Set-ItemProperty -Path $RegKey -Name $FolderKey -Value $NewPath
         }
       }
     }
+
+  }
+
+  END {
+    if($TestSettings)
+    {
+      $CompareList | Sort-Object
+    }
   }
 }
-
-# SIG # Begin signature block
-# MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
-# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUymhah1LEUK61QCQLZNIwzGqy
-# pNOgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
-# MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
-# MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
-# BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
-# CxCw5v9xTbCiiVcPvpBl7Vr4I2eR/ZF5GN88XzJNAeELbJHJdfcCvhgNLK/F4DFp
-# kvf2qUb6l/ayLvpBBg6lcFskhKG1vbEz+uNrg4se8pxecJ24Ln3IrxfR2o+BAgMB
-# AAGjYDBeMBMGA1UdJQQMMAoGCCsGAQUFBwMDMEcGA1UdAQRAMD6AEMry1NzZravR
-# UsYVhyFVVoyhGDAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlboIQyWSKL3Rtw7JMh5kR
-# I2JlijAJBgUrDgMCHQUAA4GBAF9beeNarhSMJBRL5idYsFZCvMNeLpr3n9fjauAC
-# CDB6C+V3PQOvHXXxUqYmzZpkOPpu38TCZvBuBUchvqKRmhKARANLQt0gKBo8nf4b
-# OXpOjdXnLeI2t8SSFRltmhw8TiZEpZR1lCq9123A3LDFN94g7I7DYxY1Kp5FCBds
-# fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
-# w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
-# ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUb90/N+2G2+cENsIyUzgC/+bBQzkw
-# DQYJKoZIhvcNAQEBBQAEgYAe9QVCrIMBBNpMU5KDbsjWXGqnaFxUNd/Kwo2aOP+o
-# bN/ZispBAze/mV2QHPuoxBQCHS0WkVnD7zAVigMkkfGp2aHATrkqpBgUlS7av1Fi
-# UiKDvQOVZkw79EbWypF6stseblY7pXFjiKITVd+5ypt1aGXbMiA6b/uZSqmVHM2J
-# zg==
-# SIG # End signature block
