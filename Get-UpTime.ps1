@@ -114,7 +114,7 @@ Function Get-UpTime
         }
         if($DisplayOnly)
         {
-          Write-Output -InputObject $Object
+          Write-Output $Object
         }
 
         $Object       = $null
@@ -129,9 +129,9 @@ Function Get-UpTime
   END {
     if ($ShowOfflineComputers) 
     {
-      Write-Output -InputObject ''
-      Write-Output -InputObject 'Errors for Computers not able to connect.'
-      Write-Output -InputObject $ErroredComputers
+      Write-Output ''
+      Write-Output 'Errors for Computers not able to connect.'
+      Write-Output $ErroredComputers
     }
   }
 }
@@ -139,8 +139,8 @@ Function Get-UpTime
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/jHfr8TuJUXlVIFsF4beuYbR
-# Ls+gggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUEWy86joWGz9Ly5SH8nvpMZhd
+# FFSgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -154,9 +154,9 @@ Function Get-UpTime
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUqVrOx73u+PsN11xDnQX64yJCqBMw
-# DQYJKoZIhvcNAQEBBQAEgYAH1VshmTzmBwM7Ipd50ocnuyD7f8jyaN+WO4EM0Pvo
-# RWrf/pYQVHRwpxm/30XXDVUB+k2aBUw6lFEK8k2eTl/Yd0qkrnsW9V+xdPeIZWDi
-# CF4nsQBnI/aDycilut4MJrKhQqAyRqpIZx7Ve8IRf6QwmaiUIXmFLcUUxS3+V3XZ
-# Cg==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU/p43yh2NQRtKZwiAFbztcLBqjQEw
+# DQYJKoZIhvcNAQEBBQAEgYB2OCKYXkA85ayP6jeoAKmr5rqHekLntaM/4vrD8ecv
+# BJAw7zsQGLG5/bwHQkolOYppmx4etvcx7ZGosr4pwutJGhpneqwKPSPANWQqf8HA
+# XsvFLAZJ7Ecd+3NJcvXvztsj/gMIv4Mhm15o4pp8zWw49YZtcpv/a0uIr9JFLBDG
+# Sw==
 # SIG # End signature block
