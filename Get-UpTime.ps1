@@ -112,10 +112,10 @@ Function Get-UpTime
           $Object | Export-Csv -Path $OutCsv -Append -NoTypeInformation
           Write-Verbose -Message ('Output located {0}' -f $OutCsv)
         }
-        if($DisplayOnly)
-        {
-          Write-Output $Object
-        }
+<#        if($DisplayOnly)
+        {#>
+       Write-Output $Object
+        #}
 
         $Object       = $null
         $OS           = $null
@@ -139,8 +139,8 @@ Function Get-UpTime
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUEWy86joWGz9Ly5SH8nvpMZhd
-# FFSgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUCXXZj4HGkpFeaXuOVvQRGv9Q
+# luGgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -154,9 +154,9 @@ Function Get-UpTime
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU/p43yh2NQRtKZwiAFbztcLBqjQEw
-# DQYJKoZIhvcNAQEBBQAEgYB2OCKYXkA85ayP6jeoAKmr5rqHekLntaM/4vrD8ecv
-# BJAw7zsQGLG5/bwHQkolOYppmx4etvcx7ZGosr4pwutJGhpneqwKPSPANWQqf8HA
-# XsvFLAZJ7Ecd+3NJcvXvztsj/gMIv4Mhm15o4pp8zWw49YZtcpv/a0uIr9JFLBDG
-# Sw==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUcJrNVhGRCU4HOvA/nPFK0mP1hgsw
+# DQYJKoZIhvcNAQEBBQAEgYAaN7GmyxOEjI5jZzfnZTJJnev+OOmFo5utqnacEIh6
+# bHDBRovGYoiO3HSeIJR0S82GW0Vcuzik7AWss+kt7oxRCyJUrIrduffdv5tyzwrO
+# /Tw3bxcCpoPoOiUp/YeVwaCo1mB9qk1at8XmAjyDQEx8wOTpZ/JymGWV6EEV65aj
+# pQ==
 # SIG # End signature block
