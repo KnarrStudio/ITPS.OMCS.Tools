@@ -1,6 +1,36 @@
 ﻿#requires -Version 3.0 -Modules PrintManagement
 function Test-PrinterStatus
 {
+  <#
+    .SYNOPSIS
+    Tests the status of the printers on the network.  
+
+    .DESCRIPTION
+    What started as a oneline script to find out which printers are erroring out has turned into this module.  It creates two files, one that has a list of all of the printers and one that has a list of the printers that are not in a "Normal" status.  It also finds the port IP Address and attempts to "ping" it.  It returns those results to the screen.
+
+
+    .PARAMETER PrintServer
+    Assigns the print server name to the variable.
+
+    .PARAMETER PingReportFolder
+    Assigns a location to where the files will be stored.
+
+    .EXAMPLE
+    Test-PrinterStatus -PrintServer Value -PingReportFolder Value
+    The simple form of this returns the staus of the printers.  
+
+    .LINK
+    https://knarrstudio.github.io/ITPS.OMCS.Tools/
+    The first link is opened by Get-Help -Online Test-PrinterStatus
+
+    .INPUTS
+    Print server Name
+    Report location
+
+    .OUTPUTS
+    Screen and Files
+  #>
+
 
   param
   (
@@ -34,6 +64,7 @@ function Test-PrinterStatus
     foreach($OnePrinter in $PrinterList)
     {
       $PortName = $OnePrinter.PortName
+      $PrinterName = $OnePrinter.Name
       if ($PrinterName -ne 'Name')
       {
         $PortIpAddress = (Get-PrinterPort -ComputerName $PrintServer -Name $PortName).PrinterHostAddress 
@@ -76,11 +107,12 @@ function Test-PrinterStatus
   Write-Verbose -Message "This test was run by $env:USERNAME from $env:COMPUTERNAME"
   Write-Verbose -Message ('You can find the full report at: {0}' -f $ReportFile)
 }
+
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUM0iMWgrqPUAS9NiXyMzEBTk+
-# pqWgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUKVDxpYT2Tsgo2dFAVV6hmA97
+# zN6gggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -94,9 +126,9 @@ function Test-PrinterStatus
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUI6aUnExelX4C27EOKGSJwYSez58w
-# DQYJKoZIhvcNAQEBBQAEgYCTw7QfOsu65Pvg/mbS/hfdDBstnHSft3IS0hryC3Ce
-# g2/R05qLCa9qrfVxTEYfEoBVqr5gMVs8ngX5kVUbgVldBjV5QE1q4APlHIjO7S/i
-# Y3ZDh95qouvaCdegbGYFIgrGKbYS51GEJX7m3+IAqlZpreY2ZEVowzW0/LCRP4ip
-# cA==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUJ9m5xNMT8T9tFd6hSahOfE1qkV4w
+# DQYJKoZIhvcNAQEBBQAEgYCkOrYzToJfQnL8HQ+j4rFNTLuMuyJwWfybtfmKxj+v
+# pEaO/uO78ZKo1hsjxuUQgKgVOFwzhb6BYT01N0N5rlUkiPshqW0ZP3O5PVOlOEK/
+# LzAk7c3cve0cUT5+s8nu/6d6PphESUYWRbXDmJhfSQz+HvuW3CrWEWaKdHnl79WP
+# AA==
 # SIG # End signature block
