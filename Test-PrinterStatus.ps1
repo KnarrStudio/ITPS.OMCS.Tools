@@ -33,13 +33,14 @@ function Test-PrinterStatus
   {
     foreach($OnePrinter in $PrinterList)
     {
-      $PrinterName = $OnePrinter.Name
+      $PortName = $OnePrinter.PortName
       if ($PrinterName -ne 'Name')
       {
-        $PrinterIpAddress = Get-PrinterPort -ComputerName $PrintServer -Name $PrinterName | Select-Object -Property PrinterHostAddress -ErrorAction SilentlyContinue
-        if ($PrinterIpAddress)
+        $PortIpAddress = (Get-PrinterPort -ComputerName $PrintServer -Name $PortName).PrinterHostAddress 
+        #[String]$PortIpAddress = (Get-PrinterPort -ComputerName $PrintServer -Name $PrinterName -ErrorAction SilentlyContinue).PrinterHostAddress | Select-Object -Property PrinterHostAddress -ErrorAction SilentlyContinue
+        if ($PortIpAddress)
         {
-          $PingPortResult = Test-Connection -ComputerName $PrinterIpAddress -Count 1 -Quiet 
+          $PingPortResult = Test-Connection -ComputerName $PortIpAddress -Count 1 -Quiet 
           if($PingPortResult -eq $false)
           {
             Write-Host ('The printer {0} failed to respond to a ping!  ' -f $PrinterName) -f Red
