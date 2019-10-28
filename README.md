@@ -9,4 +9,5 @@
 - Test-FiberSatellite
 - Test-PrinterStatus
 
- [https://github.com/KnarrStudio/ITPS.OMCS.Tools.git](https://github.com/KnarrStudio/ITPS.OMCS.Tools.git)
+Module Download:
+[https://github.com/KnarrStudio/ITPS.OMCS.Tools/archive/master.zip](https://github.com/KnarrStudio/ITPS.OMCS.Tools/archive/master.zip)
