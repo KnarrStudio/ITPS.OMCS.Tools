@@ -8,21 +8,21 @@
 
 # LOADING ALL FUNCTION DEFINITIONS:
 
-. $PSScriptRoot\Add-NetworkPrinter.ps1
-. $PSScriptRoot\Compare-Folders.ps1
-. $PSScriptRoot\Get-InstalledSoftware.ps1
-. $PSScriptRoot\Get-UpTime.ps1
-. $PSScriptRoot\New-TimeStampFileName.ps1
-. $PSScriptRoot\Repair-FolderRedirection.ps1
-. $PSScriptRoot\Test-AdWorkstationConnections.ps1
-. $PSScriptRoot\Test-FiberSatellite.ps1
-. $PSScriptRoot\Test-PrinterStatus.ps1
+. $PSScriptRoot\Scripts\Add-NetworkPrinter.ps1
+. $PSScriptRoot\Scripts\Compare-Folders.ps1
+. $PSScriptRoot\Scripts\Get-InstalledSoftware.ps1
+. $PSScriptRoot\Scripts\Get-UpTime.ps1
+. $PSScriptRoot\Scripts\New-TimeStampFileName.ps1
+. $PSScriptRoot\Scripts\Repair-FolderRedirection.ps1
+. $PSScriptRoot\Scripts\Test-AdWorkstationConnections.ps1
+. $PSScriptRoot\Scripts\Test-FiberSatellite.ps1
+. $PSScriptRoot\Scripts\Test-PrinterStatus.ps1
 
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUXq+bO2N44gsUbH0tfyIXPZF8
-# 96GgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvNlAlLgNZEAg9mckqvKSp5Vq
+# rjKgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -36,9 +36,9 @@
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUTY1pxFuXbWmGGjBUtfCmMG9VYGUw
-# DQYJKoZIhvcNAQEBBQAEgYBPiV6dl3EfRS1vHhT2incjd62UwYx61fNohK6ke0+J
-# 1o9GMAHtvG6TrYCwb8K9MNsjmGv6LZ1dxrZLgj9zbm7Ah6HlAGWZspT6pMHB6lTa
-# fMYrQUyHPDhT7bZq0DdZzWtp6EODmY3AqBFPOREnrHJE/u+PUw9ZDF94OObr4DmY
-# nQ==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUSs6rz5edBD1tuk54WfcSAPMu698w
+# DQYJKoZIhvcNAQEBBQAEgYAQXBvYzLzC9+qkWPYLwiOKfyoJlrmutiHwn8ZKjodg
+# HtQgW88U5y62+X0hkcF4U9o/RsVsTlEgr581HqfC1M30xNht+O4bN/xzimtDffZy
+# LgOUODadE+YRtvnxMEncshF1zcHnr1QFrMjilzTnUIWO5R0DstWcBmOvTBMUTht5
+# qg==
 # SIG # End signature block

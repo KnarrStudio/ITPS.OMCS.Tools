@@ -30,13 +30,13 @@ Function Get-UpTime
 
   [cmdletbinding(DefaultParameterSetName = 'DisplayOnly')]
   Param (
-    [Parameter(ParameterSetName = 'DisplayOnly',ValueFromPipeline,ValueFromPipelineByPropertyName,Position = 0)]
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName,Position = 0)]
     [Alias('hostname')]
     [string[]]$ComputerName = $env:COMPUTERNAME,
     [Parameter (ParameterSetName = 'DisplayOnly')]
     [Switch]$ShowOfflineComputers,
-    [Parameter (ParameterSetName = 'DisplayOnly')]
-    [Switch]$DisplayOnly,
+    <# [Parameter (ParameterSetName = 'DisplayOnly')]
+    [Switch]$DisplayOnly,#>
     [Parameter (ParameterSetName = 'DisplayOnly')]
     [Switch]$BootOnly,
     [Parameter (ParameterSetName = 'FileOnly')]
@@ -87,7 +87,7 @@ Function Get-UpTime
           TotalHours   = ( '{0:n2}' -f $UpTime.TotalHours)
         }
 
-        $Object = New-Object -TypeName PSObject -Property $Properties | Select-Object -ExpandProperty $SelectObjects
+        $Object = New-Object -TypeName PSObject -Property $Properties | Select-Object -Property $SelectObjects
       }
       catch 
       {
@@ -102,7 +102,7 @@ Function Get-UpTime
             TotalHours   = 'Error Shown Below'
           }
 
-          $Object = New-Object -TypeName PSObject -Property $Properties | Select-Object -ExpandProperty $SelectObjects
+          $Object = New-Object -TypeName PSObject -Property $Properties | Select-Object -Property $SelectObjects
         }
       }
       finally 
@@ -112,10 +112,9 @@ Function Get-UpTime
           $Object | Export-Csv -Path $OutCsv -Append -NoTypeInformation
           Write-Verbose -Message ('Output located {0}' -f $OutCsv)
         }
-<#        if($DisplayOnly)
-        {#>
-       Write-Output $Object
-        #}
+
+        Write-Output -InputObject $Object
+       
 
         $Object       = $null
         $OS           = $null
@@ -129,18 +128,21 @@ Function Get-UpTime
   END {
     if ($ShowOfflineComputers) 
     {
-      Write-Output ''
-      Write-Output 'Errors for Computers not able to connect.'
-      Write-Output $ErroredComputers
+      Write-Output -InputObject ''
+      Write-Output -InputObject 'Errors for Computers not able to connect.'
+      Write-Output -InputObject $ErroredComputers
     }
   }
 }
 
+
+
+
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUCXXZj4HGkpFeaXuOVvQRGv9Q
-# luGgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUiVTL+s5ylccsDYRdm2C+Vt9M
+# LA+gggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -154,9 +156,9 @@ Function Get-UpTime
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUcJrNVhGRCU4HOvA/nPFK0mP1hgsw
-# DQYJKoZIhvcNAQEBBQAEgYAaN7GmyxOEjI5jZzfnZTJJnev+OOmFo5utqnacEIh6
-# bHDBRovGYoiO3HSeIJR0S82GW0Vcuzik7AWss+kt7oxRCyJUrIrduffdv5tyzwrO
-# /Tw3bxcCpoPoOiUp/YeVwaCo1mB9qk1at8XmAjyDQEx8wOTpZ/JymGWV6EEV65aj
-# pQ==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUGFdz0sH2ftrQjw9Q9vDvo7RjX2Mw
+# DQYJKoZIhvcNAQEBBQAEgYAa4gWnEoPC0qZ5vBtCH0uSlp/FEKyounXKIPFY+P33
+# Z/GFQW/slQMKxDRCDVyFs/eoAamN0SDIMZMB9VcM7OPHeF+EAOlXGF4PuAczBVYy
+# 6Af0BRjGPJYbxCDjowULwZrJ215C5jgrQ9WJF+d0n5K2ypp9IEGxK44QBE9mYyFR
+# 1w==
 # SIG # End signature block
