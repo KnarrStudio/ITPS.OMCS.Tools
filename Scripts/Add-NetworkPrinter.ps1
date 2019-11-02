@@ -2,37 +2,37 @@
 function Add-NetworkPrinter
 {
   <#
-    .SYNOPSIS
-    Retrieves all of the printers you are allowed to see on a print server that you designate.  
+      .SYNOPSIS
+      Retrieves all of the printers you are allowed to see on a print server that you designate.  
       Allows you to select it and adds the printer to your local workstation.
 
-    .PARAMETER PrintServer
-    Name of the print server you will using.
+      .PARAMETER PrintServer
+      Name of the print server you will using.
 
-    .PARAMETER Location
-    The location as indicated on the printer properties
+      .PARAMETER Location
+      The location as indicated on the printer properties
 
-    .EXAMPLE
-    Add-NetworkPrinter -PrintServer Value -Location Value
-    Finds all of the printers with the location set to the value indicated.
+      .EXAMPLE
+      Add-NetworkPrinter -PrintServer Value -Location Value
+      Finds all of the printers with the location set to the value indicated.
 
-    .OUTPUTS
-    Connection to a networked printer
+      .OUTPUTS
+      Connection to a networked printer
   #>
-
-
+  
+  
   [cmdletbinding()]
   param
   (
     [Parameter(Mandatory,HelpMessage = 'Enter the printserver name',Position=0)]
     [String]$PrintServer,
-    [Parameter(HelpMessage = 'Location of printer',Position=1)]
+    [Parameter(Position=1)]
     [AllowNull()]
     [String]$Location
-  )
-  
 
-try
+  )
+
+  try
   {
     if(!(Get-Module -Name PrintManagement))
     {
@@ -58,9 +58,9 @@ try
         Write-Verbose -Message ('Printer Selected {0}' -f $PrinterSelection)
       }
       $PrinterName = $PrinterSelection.name
-      Write-Verbose -Message ('Pritner Name {0}' -f $PrinterName)
+      Write-Verbose -Message ('Printer Name {0}' -f $PrinterName)
    
-      #$PrintServer = 'test'
+      #$PrintServer # = 'test'
       Add-Printer -ConnectionName ('\\{0}\{1}' -f $PrintServer, $PrinterName) -ErrorAction Stop
       Write-Verbose -Message ('Printer Connected \\{0}\{1}' -f $PrintServer, $PrinterName)
     }
@@ -97,11 +97,13 @@ try
   }
 }
 
+
+
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUfTjLw6rEIgJMBAs+pKCPxT+L
-# WhKgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUEO1zDW323M5/Q75ZiJ8UatOy
+# hTKgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -115,9 +117,9 @@ try
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUDUPzjb0+b/xB315abA43PpscsmAw
-# DQYJKoZIhvcNAQEBBQAEgYAhK164DorTXjyPmMzvrx32YbDdqJVPr4sycjMrqKKE
-# GLOG94CeL1nm4C7+SAIhWzPmVQJEa76aeVwYPzIu4Lq3tvc/Zy8CCioMgDhFh2DR
-# +ix+2iD0sYLQSCq3RgAdNyGE0jg1artSf5T/pOZVLsj6pBHEcCAZQWbhBRdgvd6e
-# dA==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUd1XY/Z/c2B5tiR+cSXNWuiDgDZMw
+# DQYJKoZIhvcNAQEBBQAEgYBfEEu3FTdIAQslvy08kTsYGhK1JMdwpbbJd6/POoTo
+# ebHHGjm6gnK9XPAX0E1RVfYQ9fxat+Oq9aAIoAMn+hc1f9p9deOxgmJFdcdXpAOQ
+# DT42Ewi4inNaxU3RHQ519KzemGNvDDxjjnYMRtHJHWmcPNh6pREgxIagmJVRQ5c6
+# eA==
 # SIG # End signature block
