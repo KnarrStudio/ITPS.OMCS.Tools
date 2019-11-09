@@ -13,13 +13,13 @@
 
 Module Downloads: 
 
-Through the PowerShellGallery 
+- PowerShellGallery 
 
 ` PS> Install-Module -Name ITPS.OMCS.Tools ` 
 
 [https://www.powershellgallery.com/packages/ITPS.OMCS.Tools](https://www.powershellgallery.com/packages/ITPS.OMCS.Tools)
 
-Or find the code here at GitHub 
+- GitHub 
 
 [https://github.com/KnarrStudio/ITPS.OMCS.Tools/archive/master.zip](https://github.com/KnarrStudio/ITPS.OMCS.Tools/archive/master.zip)
 
