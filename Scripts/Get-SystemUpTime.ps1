@@ -1,33 +1,93 @@
-﻿#requires -Version 3.0
-Function Get-UpTime 
+#requires -Version 3.0
+
+<#PSScriptInfo
+
+.VERSION 1.7
+
+.GUID 4f5d3d64-7d6e-407e-a902-cdbc1b6175cd
+
+.AUTHOR Erik
+
+.COMPANYNAME KnarrStudio
+
+.COPYRIGHT
+
+.TAGS
+
+.LICENSEURI
+
+.PROJECTURI https://knarrstudio.github.io/ITPS.OMCS.Tools/
+
+.ICONURI
+
+.EXTERNALMODULEDEPENDENCIES 
+
+.REQUIREDSCRIPTS
+
+.EXTERNALSCRIPTDEPENDENCIES
+
+.RELEASENOTES
+
+
+.PRIVATEDATA
+
+#>
+
+<# 
+
+.DESCRIPTION 
+ Returns system uptime 
+
+#> 
+
+[CmdletBinding()]
+Param()
+
+function Get-SystemUpTime
 {
+  
+
   <#
       .SYNOPSIS
-      Returns the last boot time and uptime in hours for one or many computers
-
+      Short Description
       .DESCRIPTION
-      Add a more complete description of what the function does.
-
+      Detailed Description
+      .EXAMPLE
+      Get-SystemUpTime
+      explains how to use the command
+      can be multiple lines
+      .EXAMPLE
+      Get-SystemUpTime
+      another example
+      can have as many examples as you like
+  #>
+  <# 
+      .SYNOPSIS
+      Returns the last boot time and uptime in hours for one or many computers
+    
+      .DESCRIPTION 
+      Returns system uptime
+    
       .PARAMETER ComputerName
       One or Many Computers
-
+    
       .PARAMETER ShowOfflineComputers
       Returns a list of the computers that did not respond.
-
+    
       .EXAMPLE
       Get-UpTime -ComputerName Value -ShowOfflineComputers
       Returns the last boot time and uptime in hours of the list of computers in "value" and lists the computers that did not respond
-
+    
       .OUTPUTS
       ComputerName LastBoot           TotalHours       
       ------------ --------           ----------       
       localhost    10/9/2019 00:09:28 407.57           
       tester       Unable to Connect  Error Shown Below
-
+    
       Errors for Computers not able to connect.
       tester Error: The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)
   #>
-
+  
   [cmdletbinding(DefaultParameterSetName = 'DisplayOnly')]
   Param (
     [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName,Position = 0)]
@@ -44,7 +104,7 @@ Function Get-UpTime
     [Parameter (ParameterSetName = 'FileOnly')]
     [String]$OutCsv = "$env:HOMEDRIVE\Temp\UpTime.csv"
   )
- 
+  
   BEGIN {
     $ErroredComputers = @()
     if($BootOnly)
@@ -73,7 +133,7 @@ Function Get-UpTime
       }
     }
   }
-
+  
   PROCESS {
     Foreach ($Computer in $ComputerName) 
     {
@@ -86,7 +146,7 @@ Function Get-UpTime
           LastBoot     = $OS.ConvertToDateTime($OS.LastBootUpTime)
           TotalHours   = ( '{0:n2}' -f $UpTime.TotalHours)
         }
-
+        
         $Object = New-Object -TypeName PSObject -Property $Properties | Select-Object -Property $SelectObjects
       }
       catch 
@@ -95,13 +155,13 @@ Function Get-UpTime
         {
           $ErrorMessage = ('{0} Error: {1}' -f $Computer, $_.Exception.Message)
           $ErroredComputers += $ErrorMessage
- 
+          
           $Properties = @{
             ComputerName = $Computer
             LastBoot     = 'Unable to Connect'
             TotalHours   = 'Error Shown Below'
           }
-
+          
           $Object = New-Object -TypeName PSObject -Property $Properties | Select-Object -Property $SelectObjects
         }
       }
@@ -112,10 +172,9 @@ Function Get-UpTime
           $Object | Export-Csv -Path $OutCsv -Append -NoTypeInformation
           Write-Verbose -Message ('Output located {0}' -f $OutCsv)
         }
-
+        
         Write-Output -InputObject $Object
-       
-
+        
         $Object       = $null
         $OS           = $null
         $UpTime       = $null
@@ -124,7 +183,7 @@ Function Get-UpTime
       }
     }
   }
- 
+  
   END {
     if ($ShowOfflineComputers) 
     {
@@ -135,14 +194,11 @@ Function Get-UpTime
   }
 }
 
-
-
-
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUiVTL+s5ylccsDYRdm2C+Vt9M
-# LA+gggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJW1XsSh9ER4U14FzmzlR8Xz5
+# WsigggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -156,9 +212,9 @@ Function Get-UpTime
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUGFdz0sH2ftrQjw9Q9vDvo7RjX2Mw
-# DQYJKoZIhvcNAQEBBQAEgYAa4gWnEoPC0qZ5vBtCH0uSlp/FEKyounXKIPFY+P33
-# Z/GFQW/slQMKxDRCDVyFs/eoAamN0SDIMZMB9VcM7OPHeF+EAOlXGF4PuAczBVYy
-# 6Af0BRjGPJYbxCDjowULwZrJ215C5jgrQ9WJF+d0n5K2ypp9IEGxK44QBE9mYyFR
-# 1w==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUV2NE4cFnIM0jhfG57NyiGD6od/kw
+# DQYJKoZIhvcNAQEBBQAEgYAvb6ggy/4UHwhtFVvNzPG/5Kjw0UQRfix+fOft6WWV
+# xKBzkZmlPsiuFCAmSrWd+wTdIaLLdFJ3RB8R+/OyF+26DbYlUYyITJylk0uUkkl3
+# swx6j1O02fZE0Zn+7p3/YBHftZ3uK/U67sQc7PlUxjaECzLrqU+KwYaPIUo/651R
+# tQ==
 # SIG # End signature block
