@@ -1,4 +1,5 @@
 # ITPS.OMCS.Tools
+### Information Tech PowerShell Open Mind Common Sense Tools
 
 - Add-NetworkPrinter
 - Compare-Folders
@@ -9,5 +10,17 @@
 - Test-FiberSatellite
 - Test-PrinterStatus
 
-Module Download:
+
+Module Downloads: 
+
+- PowerShellGallery 
+
+` PS> Install-Module -Name ITPS.OMCS.Tools ` 
+
+[https://www.powershellgallery.com/packages/ITPS.OMCS.Tools](https://www.powershellgallery.com/packages/ITPS.OMCS.Tools)
+
+- GitHub 
+
 [https://github.com/KnarrStudio/ITPS.OMCS.Tools/archive/master.zip](https://github.com/KnarrStudio/ITPS.OMCS.Tools/archive/master.zip)
+
+
