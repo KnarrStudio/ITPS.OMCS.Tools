@@ -8,21 +8,26 @@ function Repair-FolderRedirection
       .DESCRIPTION
       The script with verify that the path exists, and copies all of the local files to the "Remote" location, then changes the registry to mach that remote location.
 
-      .PARAMETER RemotePath
-      Makes changes and repairs the path to the home folders.
-
       .PARAMETER TestSettings
       Makes no changes but allows you to varify the settings.
+      
+      .PARAMETER RemotePath
+      Makes changes and repairs the path to the home folders based on what you put here.  Such as - "$env:HOMEDRIVE\_MyComputer".
+
+      .PARAMETER RepairSettings
+      Sets the "What if" statment to $False
 
       .EXAMPLE
-      Repair-FolderRedirection -RemotePath 'H:\_MyComputer'
-      This will redirect the folders to the path on the "H:" drive.
+      Repair-FolderRedirection -RemotePath 'H:\_MyComputer' -RepairSettings
+      This will redirect the folders to the path on the "H:" drive.  You must use the 'RepairSettings' parameter if you want to make changes.
 
       .EXAMPLE
       Repair-FolderRedirection -TestSettings
       Sends the current settings to the screen
-      
   #>
+
+
+
   
   [CmdletBinding(SupportsShouldProcess,ConfirmImpact = 'High')]
   [OutputType([int])]
@@ -32,13 +37,20 @@ function Repair-FolderRedirection
     [Parameter(ParameterSetName = 'Repair',ValueFromPipelineByPropertyName,Position = 0)]
     [string]$RemotePath = "$env:HOMEDRIVE\_MyComputer",
     [Parameter(ParameterSetName = 'Repair')]
-    [Switch]$go,
+    [Switch]$RepairSettings,
     [Parameter (ParameterSetName = 'TestSettings')]
     [Switch]$TestSettings
   )
   
   Begin
   {
+    $ConfirmPreference = 'High'
+    $WhatIfPreference = $true
+    if($RepairSettings)
+    {
+      $WhatIfPreference = $false
+    }
+    
     $CompareList = @()
 
     $FolderList = @{
@@ -50,11 +62,6 @@ function Repair-FolderRedirection
       'Personal'  = 'Documents'
     }
     
-    $WhatIfPreference = $true
-    if($go){
-    $WhatIfPreference = $false
-    }
-
     $Keys = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders', 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
     $LocalPath = $Env:USERPROFILE
     $errorlog = "ErrorLog-$(Get-Date -UFormat %d%S).txt"
@@ -82,7 +89,7 @@ function Repair-FolderRedirection
       Write-Verbose -Message ('OldPath = {0}' -f $OldPath)
       try
       {
-       if(-Not $TestSettings)
+        if(-Not $TestSettings)
         {
           Copy-Item -Path $OldPath -Destination $RemotePath -Force -Recurse -ErrorAction Stop
         }
@@ -130,26 +137,27 @@ function Repair-FolderRedirection
 }
 
 # SIG # Begin signature block
-# MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
+# MIIELQYJKoZIhvcNAQcCoIIEHjCCBBoCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUg0WxvBiasTONgku/ywjSo67J
-# a/ygggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
-# MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
-# MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
-# BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
-# CxCw5v9xTbCiiVcPvpBl7Vr4I2eR/ZF5GN88XzJNAeELbJHJdfcCvhgNLK/F4DFp
-# kvf2qUb6l/ayLvpBBg6lcFskhKG1vbEz+uNrg4se8pxecJ24Ln3IrxfR2o+BAgMB
-# AAGjYDBeMBMGA1UdJQQMMAoGCCsGAQUFBwMDMEcGA1UdAQRAMD6AEMry1NzZravR
-# UsYVhyFVVoyhGDAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlboIQyWSKL3Rtw7JMh5kR
-# I2JlijAJBgUrDgMCHQUAA4GBAF9beeNarhSMJBRL5idYsFZCvMNeLpr3n9fjauAC
-# CDB6C+V3PQOvHXXxUqYmzZpkOPpu38TCZvBuBUchvqKRmhKARANLQt0gKBo8nf4b
-# OXpOjdXnLeI2t8SSFRltmhw8TiZEpZR1lCq9123A3LDFN94g7I7DYxY1Kp5FCBds
-# fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
-# w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
-# ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU0xYxrrAzCQXwPSAGmtPMoyja7uow
-# DQYJKoZIhvcNAQEBBQAEgYA3YKsA5m4pXRJ2RpixT9/1VG2lKzQn/sYbhRQOUpdK
-# wxHqmoT/m+jCrSdgu3/80ej3hETMoNPhEMxJaVVUZPd790vVBs8VBBkMsP3/biCw
-# ki7IwcQVG7vFxPeXoaFsS8j/Cc78wEa+E0mq8kB/SDw+4+9XvnkLgYxP1a6SQ8uy
-# 2w==
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUNAfRGaSQaiUkkVNWgyVKRzfh
+# SE2gggI9MIICOTCCAaagAwIBAgIQrlm6Ux0pS6dCo5jAo/sDXjAJBgUrDgMCHQUA
+# MCYxJDAiBgNVBAMTG1Bvd2VyU2hlbGwgVGVzdCBDZXJ0aWZpY2F0ZTAeFw0xOTEx
+# MDMwMjQwMzNaFw0zOTEyMzEyMzU5NTlaMCYxJDAiBgNVBAMTG1Bvd2VyU2hlbGwg
+# VGVzdCBDZXJ0aWZpY2F0ZTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA1dYD
+# /5l3p81jypA2wG5peOY1p29/afYZh+TYbSHDS6lRcGivq1XFVMoByevWwt4Z21mm
+# eeCAKhdEXmOLYwSV0o+jkM8ua5P/uA5ujJDtFWL6SWF3r4n3YApCN7868kvFJnlG
+# Eefj3kbh4JDxPZihyu2fJDPAZ0HFRF5DKkyvVikCAwEAAaNwMG4wEwYDVR0lBAww
+# CgYIKwYBBQUHAwMwVwYDVR0BBFAwToAQSlFU+nlcnZBvT7LrwisufqEoMCYxJDAi
+# BgNVBAMTG1Bvd2VyU2hlbGwgVGVzdCBDZXJ0aWZpY2F0ZYIQrlm6Ux0pS6dCo5jA
+# o/sDXjAJBgUrDgMCHQUAA4GBAEr2UlpPCGyRwgqd12ujqnMMBaJWVyHjTYCQYqtn
+# B8oh7Y7zFTLOxrqaBxN46v57uni+xogbxdodd6KPhv2aF8+f34X2rTamsthAksGq
+# wrv5JTUooU7lHM5eX3EjAs5EO9c3O/jWUfHj3JbmGj+81XFFr6s6On9oPyIZNdYG
+# Ds67MYIBWjCCAVYCAQEwOjAmMSQwIgYDVQQDExtQb3dlclNoZWxsIFRlc3QgQ2Vy
+# dGlmaWNhdGUCEK5ZulMdKUunQqOYwKP7A14wCQYFKw4DAhoFAKB4MBgGCisGAQQB
+# gjcCAQwxCjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYK
+# KwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFL8EINjm
+# SbyYNJKt66JDfafAmx9pMA0GCSqGSIb3DQEBAQUABIGAj7wCFIoZ4rB8jsMAEpaX
+# 6Mp1WGLipL3DMGQuyY+EDG5gQGnleDVc/JHzCgXpZEuMk8yPWiQvxNGLZycQeSKt
+# 3hV5Qo8+QU/sGDXxX0msvs6O9tVYPFzoRw1T/BM0G//y5us444gZYSpu3Gv3HoT5
+# xcRZCif4mQAxaDtfOA+XTqs=
 # SIG # End signature block
