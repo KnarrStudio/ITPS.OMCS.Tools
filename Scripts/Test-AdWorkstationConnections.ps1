@@ -1,6 +1,57 @@
 ﻿#requires -Version 3.0
 function Test-AdWorkstationConnections
 {
+  <#
+    .SYNOPSIS
+    Pulls a list of computers from AD and then 'pings' them.  
+
+    .DESCRIPTION
+    Pulls a list of computers from AD based on the searchbase you pass and stores them in a csv file.  Then it reads the file and 'pings' each name in the file.  If the computer does not respond, it will log it into another csv file report.     
+
+    .PARAMETER ADSearchBase
+    Defines where you want to search such as - 'OU=Clients-Desktop,OU=Computers,DC=Knarrstudio,DC=net'
+
+    .PARAMETER PingReportFolder
+    This is the folder where you want the output to be stored such as  - '\\server\share\Reports\PingReport' or 'c:\temp'
+
+    .PARAMETER OutputFileName
+    The name of the file.  Actually base name of the file.  Passing 'AdDesktop' will result in the following file names - '20191112-1851-AdDesktop_List.csv' and '20191112-1851-AdDesktop_Report.csv'
+
+    .PARAMETER Bombastic
+    Is a synonym for verose.  It doesn't quite do verbose, but gives you an output to the screen.  Without it you only the the report.  Does you verbose when running as a job. 
+
+    .EXAMPLE
+    Test-AdWorkstationConnections -ADSearchBase Value -PingReportFolder Value -OutputFileName Value -Bombastic
+    
+    This will give you two files a list and a report. Plus it will give you a count of the computers found and reported with a link the report file.
+
+
+    .NOTES
+    Place additional notes here.
+
+    .LINK
+    URLs to related sites
+    https://knarrstudio.github.io/ITPS.OMCS.Tools/
+
+    https://github.com/KnarrStudio/ITPS.OMCS.Tools
+
+    .INPUTS
+    None other than the parameters
+
+    .OUTPUTS
+    The default information in the help file will produce the following:
+    \\server\share\Reports\PingReport\20191112-1851-AdDesktop_Report.csv
+    \\server\share\Reports\PingReport\20191112-1851-AdDesktop_List.csv
+
+    ------------------ Bombasistic Output ----------
+    Total workstations found in AD: 32
+Total workstations not responding: 5
+This test was run by myusername from Workstation-1
+You can find the full report at: \\server\share\Reports\PingReport\20191112-1851-AdDesktop_Report.csv
+
+  #>
+
+
 
   [CmdletBinding(SupportsShouldProcess,ConfirmImpact = 'Low')]
   param(
@@ -23,7 +74,7 @@ function Test-AdWorkstationConnections
   $i = 1
   $BadCount = 0
   $DateNow = Get-Date -UFormat %Y%m%d-%H%M
-  $OutputFileName = ('{0}\{1}-{2}_Results.csv' -f $PingReportFolder, $DateNow,$OutputFileName)
+  $OutputFileNameReport = ('{0}\{1}-{2}_Report.csv' -f $PingReportFolder, $DateNow,$OutputFileName)
   $WorkstationSiteList = ('{0}\{1}-{2}_List.csv' -f $PingReportFolder, $DateNow,$OutputFileName)
   
 
@@ -56,11 +107,11 @@ function Test-AdWorkstationConnections
           $WorkstationProperties = Get-ADComputer -Identity $WorkstationName -Properties * | Select-Object -Property Name, LastLogonDate, Description
           if($BadCount -eq 1)
           {
-            $WorkstationProperties | Export-Csv -Path $OutputFileName -NoClobber -NoTypeInformation
+            $WorkstationProperties | Export-Csv -Path $OutputFileNameReport -NoClobber -NoTypeInformation
           }
           else
           {
-            $WorkstationProperties | Export-Csv -Path $OutputFileName -NoTypeInformation -Append
+            $WorkstationProperties | Export-Csv -Path $OutputFileNameReport -NoTypeInformation -Append
           }
         }
       }
@@ -72,14 +123,14 @@ function Test-AdWorkstationConnections
     Write-Host ('Total workstations found in AD: {0}' -f $TotalWorkstations) -ForegroundColor Green
     Write-Host ('Total workstations not responding: {0}' -f $BadCount) -ForegroundColor Red
     Write-Host "This test was run by $env:USERNAME from $env:COMPUTERNAME"
-    Write-Host ('You can find the full report at: {0}' -f $OutputFileName)
+    Write-Host ('You can find the full report at: {0}' -f $OutputFileNameReport)
   }
 }
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUYZ19OOIk7hfpaJY+mW3wRlLK
-# VTygggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUYv/GZfIigXgRfHXMJyw9J8e7
+# TPagggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -93,9 +144,9 @@ function Test-AdWorkstationConnections
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUT2ORSbhK9sK0nvFYt8c0lqv85eww
-# DQYJKoZIhvcNAQEBBQAEgYBXDRBI8BOGaeDAQnoC0wUa/0ZfA9BIys9hRTZHyHiS
-# VErzjkW0GGPHPMmWFQ2S429CaFz06W6SbRzRzQEKPM/ootNTyGU0/dqztcHs47V+
-# kWI+ITNyi32vCR3J5PLYqMfu94UpPiuGFlHxQYqJJ9FzsBhu39BrfEwGVg8T9cjR
-# jQ==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUFCwdc/8oGBNA9EPoc8+gaAaiIVQw
+# DQYJKoZIhvcNAQEBBQAEgYCh0V91UK+eqNA70P+W4hxhlpcFoWP6d8jul1VO2Zp1
+# oD0sjoqm7mKXnCXjpHgjuIg0HPMIXjr3HRJ3fdvIEEyYBJEJvU5+TJsJbm7IxGks
+# PNEXZ7dorxbnAW7Q8BBj8irhk5LprvfnzZaIsFtekK1l5A8lxSlMCAViMSbkean6
+# rA==
 # SIG # End signature block
