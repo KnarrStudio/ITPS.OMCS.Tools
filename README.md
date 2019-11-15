@@ -1,5 +1,5 @@
 # ITPS.OMCS.Tools 
-### Information Tech PowerShell Open Mind Common Sense Tools 
+### IT PowerShell Open Minded Common Sense Tools 
 
 This is the second go around of some tools.  The first was a bunch of scripts, this one although different in not just the exact scripts, but also these have been written as a module.   
 
