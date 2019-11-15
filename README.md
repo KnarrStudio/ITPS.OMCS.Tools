@@ -18,8 +18,8 @@ The original idea was to create a series of tools that could be used by the desk
 ### Module Downloads:  
 
 You can download this from the following location:  
-At the [PowerShell Gallery](https://www.powershellgallery.com/packages/ITPS.OMCS.Tools/1.7)
 
+At the [PowerShell Gallery](https://www.powershellgallery.com/packages/ITPS.OMCS.Tools/1.7)
 At [Github](https://github.com/KnarrStudio/ITPS.OMCS.Tools)
 
 
