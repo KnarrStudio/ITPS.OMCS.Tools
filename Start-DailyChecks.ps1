@@ -3,22 +3,25 @@ function Start-DailyChecks
 {
   <#
     .SYNOPSIS
-    Short Description
+    Use this to run the daily checks.  
+
     .DESCRIPTION
-    Detailed Description
+    Use this to run the daily checks.  It uses the "MyLocalParameters.txt" file and splat to set the parameters for each of the modules.
+
     .EXAMPLE
     Start-DailyChecks
-    explains how to use the command
-    can be multiple lines
-    .EXAMPLE
-    Start-DailyChecks
-    another example
-    can have as many examples as you like
+
   #>
-  Clear-Host
-  Test-FiberSatellite -Sites www.yahoo.com
-  Test-PrinterStatus -PrintServer Printserver -PingReportFolder \\fileshare
-  Test-AdWorkstationConnections -ADSearchBase xxx -PingReportFolder \\fileshare -OutputFileName WorkstationReport
-  Import-Csv -Path WorkstationList | Get-UpTime -ShowOfflineComputers -DisplayOnly
+
+
+  Write-Host "Edit the '.\MyLocalParameters.txt' file"
+  Return  # To run, delete this line of code.
+  
+  Invoke-Expression (Get-Content .\MyLocalParameters.txt | Out-String )
+  #Clear-Host
+  Test-FiberSatellite @FiberSatellite
+  Test-PrinterStatus @PrinterStatus
+  #Test-AdWorkstationConnections -ADSearchBase xxx -PingReportFolder \\fileshare -OutputFileName WorkstationReport
+  #Import-Csv -Path WorkstationList | Get-UpTime -ShowOfflineComputers -DisplayOnly
 }
 

@@ -1,1 +1,27 @@
-$Sites = ('LocalServer', 'localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com')
+$FiberSatellite = @{
+Sites = ('www.google.com','www.bing.com','www.yahoo.com')
+}
+
+$PrinterStatus = @{
+PrintServer = 'localhost'
+Verbose = $True
+PingReportFolder = 'c:\temp'
+}
+
+# $NetworkPrinter = @{PrintServer = ;Location = }
+
+# $Folders = @{}
+
+# $InstalledSoftware = @{}
+
+# $SystemUpTime = @{ComputerName = ; ShowOfflineComputers = $True;BootOnly;FileOnly;OutCsv = }
+
+# $TimeStampFileName = @{baseNAME = ;FileType = 'txt;StampFormat = 1}
+
+# $FolderRedirection = @{RemotePath = ;TestSettings = $True }
+
+# $AdWorkstationConnections = @{}
+
+
+
+
