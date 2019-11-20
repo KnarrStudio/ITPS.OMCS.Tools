@@ -1,5 +1,7 @@
 # ITPS.OMCS.Tools 
-### IT PowerShell Open Minded Common Sense Tools (No connection to the MIT OMCS project)
+### IT PowerShell Open Minded Common Sense Tools 
+#### (No connection to the MIT OMCS project) 
+
 
 This is the second go around of some tools.  The first was a bunch of scripts, this one although different in not just the exact scripts, but also these have been written as a module.   
 
