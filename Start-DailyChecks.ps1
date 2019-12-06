@@ -15,12 +15,13 @@ function Start-DailyChecks
 
 
   Write-Host "Edit the '.\MyLocalParameters.txt' file"
-  Return  # To run, delete this line of code.
+  #Return  # To run, delete this line of code.
   
   Invoke-Expression (Get-Content .\MyLocalParameters.txt | Out-String )
   #Clear-Host
   Test-FiberSatellite @FiberSatellite
-  Test-PrinterStatus @PrinterStatus
+  Get-InstalledSoftware @InstalledSoftware
+  #Test-PrinterStatus @PrinterStatus
   #Test-AdWorkstationConnections -ADSearchBase xxx -PingReportFolder \\fileshare -OutputFileName WorkstationReport
   #Import-Csv -Path WorkstationList | Get-UpTime -ShowOfflineComputers -DisplayOnly
 }

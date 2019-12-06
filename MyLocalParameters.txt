@@ -1,18 +1,21 @@
 $FiberSatellite = @{
 Sites = ('www.google.com','www.bing.com','www.yahoo.com')
+OneLineOutput = $True
 }
 
-$PrinterStatus = @{
-PrintServer = 'localhost'
-Verbose = $True
-PingReportFolder = 'c:\temp'
-}
+#$PrinterStatus = @{
+#PrintServer = 'localhost'
+#Verbose = $True
+#PingReportFolder = 'c:\temp'
+#}
 
 # $NetworkPrinter = @{PrintServer = ;Location = }
 
 # $Folders = @{}
 
-# $InstalledSoftware = @{}
+$InstalledSoftware = @{
+SortList = 'DisplayName'
+}
 
 # $SystemUpTime = @{ComputerName = ; ShowOfflineComputers = $True;BootOnly;FileOnly;OutCsv = }
 
