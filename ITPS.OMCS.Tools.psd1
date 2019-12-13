@@ -12,7 +12,7 @@
 RootModule = 'loader.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.7'
+ModuleVersion = '1.7.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@ CompanyName = 'Knarr Studio'
 Copyright = '(c) 2019 Erik.Arnesen. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'IT PowerShell tools for OMCS'
+Description = 'IT PowerShell tools for the Open Minded Common Sense tech'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '3.0'
@@ -99,13 +99,13 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('ping','printers','workstations','compare','folder','items')
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        LicenseUri = 'https://github.com/KnarrStudio/ITPS.OMCS.Tools/blob/master/LICENSE'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/KnarrStudio/ITPS.OMCS.Tools'
 
         # A URL to an icon representing this module.
         # IconUri = ''
@@ -138,8 +138,8 @@ PrivateData = @{
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU59HM/xhguWFfTvrIh8AhP5Ee
-# yoegggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMQ0UgI8MBn/ANBBnfSqf6sJQ
+# JvKgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -153,9 +153,9 @@ PrivateData = @{
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUlzNKasLqQqECpivpUGSoZWsoFhww
-# DQYJKoZIhvcNAQEBBQAEgYACOixjLwiJvDngk12ta95qTeLRO+wzVg4dTo9iq9d7
-# n/Qojxcs+QUpbXVWIzcSBtWfj+ObVCeq6Ccwqn23awu7E5mwTgKfVNxFRXTgEIkF
-# w+CyOWziHMqOeLks+7clKsy+Pc1nmEQKzNpeE+XKuhg3924YnT8uNAML/WwbMDoP
-# 7w==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUjuuElCa2RJ580z8h8tVtSwixNc0w
+# DQYJKoZIhvcNAQEBBQAEgYA2du0HmtI0/PxddJmA8GG97l3I2xntghQCrAS4U6xw
+# u20P389o9IVXBxyiJborr7VujDowicRQblYEx1iSxokdyxjT58UXIQGi66VTaQbb
+# wIsErBJnNGqtoWS+6/R5R0RLY2RiIO+W5e3vBFumxVXHdMqZ7ZqAb99wsC9gvafh
+# 0g==
 # SIG # End signature block

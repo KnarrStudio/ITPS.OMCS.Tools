@@ -1,5 +1,5 @@
-﻿#requires -Version 2.0 -Modules ITPS.OMCS.Tools
- <#
+﻿#requires -Version 3.0 -Modules ITPS.OMCS.Tools
+<#
     .SYNOPSIS
     Use this to run the daily checks.  
 
@@ -9,32 +9,39 @@
     .EXAMPLE
     Start-DailyChecks
 
-  #>
+#>
 
 
-   # Finding localpath of script
-  $scriptDir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+# Finding localpath of script
+# $scriptDir = $PSScriptRoot
 
-  # Setting the file and path to a variable
-  $MyLocalParameters = "$scriptDir\MyLocalParameters.txt"
+# Setting the file and path to a variable
+$MyLocalParameters = "$PSScriptRoot\MyLocalParameters.txt"
 
-  if($erik -ne 1){Write-Host "Edit the '$MyLocalParameters' file" -ForegroundColor Cyan
+if($erik -ne 1)
+{
+  Write-Host "Edit the '$MyLocalParameters' file" -ForegroundColor Cyan
   Return  # To run, delete this line of code.
-  }
+}
  
+Invoke-Expression -Command (Get-Content $MyLocalParameters | Out-String )
+#Clear-Host
 
-  Invoke-Expression (Get-Content $MyLocalParameters | Out-String )
-  #Clear-Host
-  Test-FiberSatellite @FiberSatellite
+
+
+Test-FiberSatellite @FiberSatellite
   
-  If($InstalledSoftware){
+If($InstalledSoftware)
+{
   Get-InstalledSoftware @InstalledSoftware
-  }
+}
 
-  If($PrinterStatus){
+If($PrinterStatus)
+{
   #Test-PrinterStatus @PrinterStatus
-  }
-  #Test-AdWorkstationConnections -ADSearchBase xxx -PingReportFolder \\fileshare -OutputFileName WorkstationReport
-  #Import-Csv -Path WorkstationList | Get-UpTime -ShowOfflineComputers -DisplayOnly
+}
+  
+#Test-AdWorkstationConnections -ADSearchBase xxx -PingReportFolder \\fileshare -OutputFileName WorkstationReport
+#Import-Csv -Path WorkstationList | Get-UpTime -ShowOfflineComputers -DisplayOnly
 
 
