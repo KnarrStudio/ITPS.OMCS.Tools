@@ -1,7 +1,5 @@
 ﻿#requires -Version 2.0 -Modules ITPS.OMCS.Tools
-function Start-DailyChecks
-{
-  <#
+ <#
     .SYNOPSIS
     Use this to run the daily checks.  
 
@@ -14,15 +12,29 @@ function Start-DailyChecks
   #>
 
 
-  Write-Host "Edit the '.\MyLocalParameters.txt' file"
-  #Return  # To run, delete this line of code.
-  
-  Invoke-Expression (Get-Content .\MyLocalParameters.txt | Out-String )
+   # Finding localpath of script
+  $scriptDir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+
+  # Setting the file and path to a variable
+  $MyLocalParameters = "$scriptDir\MyLocalParameters.txt"
+
+  if($erik -ne 1){Write-Host "Edit the '$MyLocalParameters' file" -ForegroundColor Cyan
+  Return  # To run, delete this line of code.
+  }
+ 
+
+  Invoke-Expression (Get-Content $MyLocalParameters | Out-String )
   #Clear-Host
   Test-FiberSatellite @FiberSatellite
+  
+  If($InstalledSoftware){
   Get-InstalledSoftware @InstalledSoftware
+  }
+
+  If($PrinterStatus){
   #Test-PrinterStatus @PrinterStatus
+  }
   #Test-AdWorkstationConnections -ADSearchBase xxx -PingReportFolder \\fileshare -OutputFileName WorkstationReport
   #Import-Csv -Path WorkstationList | Get-UpTime -ShowOfflineComputers -DisplayOnly
-}
+
 
