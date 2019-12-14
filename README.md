@@ -15,7 +15,8 @@ The original idea was to create a series of tools that could be used by the desk
 * **Repair-FolderRedirection** - This will make the changes in the registry to fix folder redirection for the folders that were used at the place I worked when I wrote it. 
 * **Test-AdWorkstationConnections** - Collects a list of computers from AD base the the Searchbase you provide and returns two files, first is the full list of computers the next is a list of computer that not responded to the "ping".  Because it uses the Net bios name to ping, this also tests the DNS servers.  It also gives a list of all of the computers that are in the searchbase. 
 * **Test-FiberSatellite** - "Pings" servers based on your input.  It pings the big search engine websites. 
-* **Test-PrinterStatus** - Similar to the AD workstation connection is does the same for printers. You have to provide the printserver name.
+* **Test-PrinterStatus** - Similar to the AD workstation connection is does the same for printers. You have to provide the printserver name.  
+* **Test-Replication** - Perform a test to ensure Replication is working.  You must know at least two of the replication partners
 
 ### Module Downloads:  
 
