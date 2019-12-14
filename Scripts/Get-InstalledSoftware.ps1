@@ -4,14 +4,17 @@
       .SYNOPSIS
       "Get-InstalledSoftware" collects all the software listed in the Uninstall registry.
 
+      .DESCRIPTION
+      Add a more complete description of what the function does.
+
       .PARAMETER SortList
-      This will provide a list of installed software from the registry.
+      Allows you to sort by Name, Installed Date or Version Number.  'InstallDate' or 'DisplayName' or 'DisplayVersion'
 
       .PARAMETER SoftwareName
-      This wil provide the installed date, version, and name of the software in the "value".
+      This wil provide the installed date, version, and name of the software in the "value".  You can use part of a name or two words, but they must be in quotes.  Mozil or "Mozilla Firefox"
 
       .PARAMETER File
-      Will output to a file, but this is currently now working
+      Future Use:  Will be used to send to a file instead of the screen. 
 
       .EXAMPLE
       Get-InstalledSoftware -SortList DisplayName
@@ -28,37 +31,65 @@
 
       Installdate  DisplayVersion  DisplayName                     
       -----------  --------------  -----------                     
-                   69.0            Mozilla Firefox 69.0 (x64 en-US)
+      69.0            Mozilla Firefox 69.0 (x64 en-US)
       20170112     1.2.9.112       Greenshot 1.2.9.112             
-                   2.1.5           VLC media player  
+      2.1.5           VLC media player  
+
+      .NOTES
+      Place additional notes here.
+
+      .LINK
+      https://github.com/KnarrStudio/ITPS.OMCS.Tools
+
+
+      .OUTPUTS
+      To the screen until the File parameter is working
+
   #>
+
 
 
 
   [cmdletbinding(DefaultParameterSetName = 'SortList',SupportsPaging = $true)]
   Param(
-    [Parameter(Mandatory,HelpMessage = 'Get list of installed software by installed date or alphabetically', Position = 0,ParameterSetName = 'SortList')]
-    [ValidateSet('InstallDate', 'DisplayName')] [Object]$SortList,
+    [Parameter(Mandatory = $false,HelpMessage = 'Get list of installed software by installed date (InstallDate) or alphabetically (DisplayName)',ParameterSetName = 'SortList')]
+    [Parameter(ParameterSetName = 'SoftwareName')]
+    [ValidateSet('InstallDate', 'DisplayName','DisplayVersion')] 
+    [Object]$SortList,
     
     [Parameter(Mandatory = $true,HelpMessage = 'At least part of the software name to test', Position = 0,ParameterSetName = 'SoftwareName')]
     [String[]]$SoftwareName,
-    [Parameter(Mandatory = $false,HelpMessage = 'At least part of the software name to test', Position = 1,ParameterSetName = 'SoftwareName')]
+    [Parameter(Mandatory = $false,HelpMessage = 'list of installed software by installed date (InstallDate) or alphabetically (DisplayName)', Position = 1,ParameterSetName = 'SoftwareName')]
     [Parameter(ParameterSetName = 'SortList')]
     [Switch]$File
- 
   )
   
-  Begin{ }
+  Begin { 
+    $InstalledSoftware = (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*)
+  }
   
   Process {
     Try 
     {
-      $InstalledSoftware = (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*)
-      if($SortList) 
+      if($SoftwareName -eq $null) 
       {
+        if($SortList -eq $null)
+        {
+          $SortList = 'DisplayName'
+        }
         $InstalledSoftware |
         Sort-Object -Descending -Property $SortList |
-        Select-Object -Property @{Name='Date Installed';Exp={$_.Installdate}},@{Name='Version';Exp={$_.DisplayVersion}}, DisplayName #, UninstallString 
+        Select-Object -Property @{
+          Name = 'Date Installed'
+          Exp  = {
+            $_.Installdate
+          }
+        }, @{
+          Name = 'Version'
+          Exp  = {
+            $_.DisplayVersion
+          }
+        }, DisplayName #, UninstallString 
       }
       Else 
       {
@@ -66,7 +97,12 @@
         {
           $InstalledSoftware |
           Where-Object -Property DisplayName -Match -Value $Item |
-          Select-Object -Property @{Name='Version';Exp={$_.DisplayVersion}}, DisplayName
+          Select-Object -Property @{
+            Name = 'Version'
+            Exp  = {
+              $_.DisplayVersion
+            }
+          }, DisplayName
         }
       }
     }
@@ -92,11 +128,18 @@
   
   End{ }
 }
+
+#
+# Get-InstalledSoftware -SortList InstallDate | select -First 10 #| Format-Table -AutoSize
+# Get-InstalledSoftware -SoftwareName 'Mozilla Firefox',vlc, Acrobat
+# Get-InstalledSoftware
+ 
+
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvqsZr6zb0rl6693cUqRgrFfn
-# 3ZOgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUhC/lrWetbnRrkFHbCzRwJ7mw
+# G+ygggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -110,9 +153,9 @@
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUdJtcWBA59bftVJj1leGAcc3NgOkw
-# DQYJKoZIhvcNAQEBBQAEgYBoN4ZPkv4F0pUHnz2XTut8tQAWPLYLZcCyBp/4ZMPw
-# ZgQQiYk+8UxmotngCDvNxR6UVtOsajIk9zy6Ok5sCH+pAGJ/5dhGGwrJ1pgbtuoz
-# WT0IG5nd+U3ty4NYUDl15+WVd+os/AHSGxWoN5L1yB7xW3/5NLBFOQ31FkDaKI6c
-# Sw==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUURyjyxggCrvLjj4MdESrT2rsjDkw
+# DQYJKoZIhvcNAQEBBQAEgYCeryanlX/X0Gzx2WJHGejwcBcycQ/28NpJk0cSnZwZ
+# /tLvQG2hKF8Y9znwVWjlIYm+wLmF4Rz5nQu2L4JxetQogOeLFUyU1mHWo56aeYbY
+# s8ji4xGvgad7uH2PJSKLegIo2s4wUzYTIV1kbub3lhwFcSrl3aabIXseLuYkn4Jt
+# Mw==
 # SIG # End signature block
