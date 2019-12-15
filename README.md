@@ -20,7 +20,7 @@ The original idea was to create a series of tools that could be used by the desk
 
 ### Module Downloads:  
 
-At the [PowerShell Gallery](https://www.powershellgallery.com/packages/ITPS.OMCS.Tools/1.7)  
+Latest Version at [PowerShell Gallery](https://www.powershellgallery.com/packages/ITPS.OMCS.Tools/1.8.1)  
 
 At [Github](https://github.com/KnarrStudio/ITPS.OMCS.Tools) 
 
