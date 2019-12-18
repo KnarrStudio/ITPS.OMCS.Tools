@@ -18,6 +18,12 @@ The original idea was to create a series of tools that could be used by the desk
 * **Test-PrinterStatus** - Similar to the AD workstation connection is does the same for printers. You have to provide the printserver name.  
 * **Test-Replication** - Perform a test to ensure Replication is working.  You must know at least two of the replication partners
 
+```PowerShell 
+
+Test-FiberSatellite -Sites Value -OneLineOutput
+
+``` 
+
 ### Module Downloads:  
 
 Latest Version at [PowerShell Gallery](https://www.powershellgallery.com/packages/ITPS.OMCS.Tools/1.8.1)  
