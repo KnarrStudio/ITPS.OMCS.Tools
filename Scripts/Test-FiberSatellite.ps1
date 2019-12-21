@@ -1,21 +1,56 @@
-﻿#requires -Version 2.0 -Modules NetTCPIP
+#requires -Version 3.0 -Modules NetTCPIP
 function Test-FiberSatellite
 {
-  <#
+  <#PSScriptInfo
+
+      .VERSION 2.0
+
+      .GUID c528ef9f-ccdf-47ca-8885-8883598c5e79
+
+      .AUTHOR Erik
+
+      .COMPANYNAME Knarr Studio
+
+      .COPYRIGHT
+
+      .TAGS Test Console NonAdmin User
+
+      .LICENSEURI
+
+      .PROJECTURI
+
+      .ICONURI
+
+      .EXTERNALMODULEDEPENDENCIES Test-NetConnection
+
+      .REQUIREDSCRIPTS
+
+      .EXTERNALSCRIPTDEPENDENCIES
+
+      .RELEASENOTES
+
+
+      .PRIVATEDATA
+
+  #>
+  <# 
+
       .SYNOPSIS
       "Pings" a group of sites or servers and gives a response in laymans terms.
 
-      .DESCRIPTION
-      This started due to our need to find out if we were running on Fiber or not.  There are some default off island sites that it will test, but you can pass them if you only want to check one or two sites.
+      .DESCRIPTION 
+      "Pings" a group of sites or servers and gives a response in laymans terms. 
+      This started due to our need to find out if transport was over fiber or bird.  
+      There are some default remote sites that it will test, but you can pass your own if you only want to check one or two sites. 
 
       .PARAMETER Sites
       A single or list of sites or servers that you want to test against.
 
-      .PARAMETER OneLineOutput
+      .PARAMETER Simple
       Provides a single output line for those who just need answers.
 
       .EXAMPLE
-      Test-FiberSatellite -Sites Value -OneLineOutput
+      Test-FiberSatellite -Sites Value -Simple
       Tests the Value and displays the output as a single line of text
 
       .NOTES
@@ -28,22 +63,31 @@ function Test-FiberSatellite
       To console or screen at this time.
   #>
 
+  [cmdletbinding(DefaultParameterSetName = 'Default')]
   param
   (
     [Parameter(Position = 0)]
-    [Object[]] $Sites = ('LocalServer', 'localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com'),
-    [Switch]$OneLineOutput
+    [Object[]] $Sites = ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com'),
+    [Parameter (ParameterSetName = 'Default')]
+    [Switch]$Simple,
+    [Parameter (ParameterSetName = 'Log')]
+    [Switch]$Log,
+    [Parameter (Mandatory,HelpMessage = 'C:\Temp\Reports',ParameterSetName = 'Log')]
+    [String]$ReportFolder
   )
   
   $RttTotal = $NotRight = 0
   $TotalResponses = $TotalSites = $Sites.Count
-  function Test-Verbose 
-  {
-    [Management.Automation.ActionPreference]::SilentlyContinue -ne $VerbosePreference
+  $ReportFile = (('{0}\FiberSatellite.log' -f $ReportFolder))
+  
+  $OutputTable = @{
+    Title  = "`nThe Ping-O-Matic Fiber Tester!"
+    Green  = ' Round Trip Time is GOOD!'
+    Yellow = ' Although not always the case this could indicate that you are on the backup fiber.'
+    Red    = ' Although not always the case this could indicate that you are on the Satellite.'
+    Report = ''
   }
-    if(-not $OneLineOutput)
-    {
-    Write-Host ('The Ping-O-Matic Fiber Tester!') -BackgroundColor DarkYellow -ForegroundColor White}
+
   ForEach ($Site in $Sites)  
   {
     $PingReply = Test-NetConnection -ComputerName $Site 
@@ -66,45 +110,62 @@ function Test-FiberSatellite
   }
 
   $RTT = $RttTotal/$TotalResponses
-  $TimeStamp = Get-Date -Format 'dd-MMM-yyyy HH:mm'
-  if(-not $OneLineOutput)
+  $TimeStamp = Get-Date -Format G 
+
+  $OutputTable.Report = ('{1} - {3} tested {0} remote sites and {2} responded. The average response time: {4}ms' -f $TotalSites, $TimeStamp, $TotalResponses, $env:USERNAME, [int]$RTT) 
+ 
+  Write-Verbose -Message $OutputTable.Report
+  #$OutputTable.Report | Out-File $ReportFile
+  
+  If(-Not $Log)
   {
-    <#    if(Test-Verbose)
-    {#>
+    Write-Output -Message $OutputTable.Report
+  }
+
+  if((-not $Simple) -and (-not $Log))
+  {
+    Write-Output $OutputTable.Title 
     if($RTT -gt 380)
     {
-      Write-Host('Although not always the case this could indicate that you are on the Satellite backup circuit.') -BackgroundColor Red -ForegroundColor White
+      Write-Host('  ') -BackgroundColor Red -ForegroundColor White -NoNewline
+      Write-Output -InputObject ($OutputTable.Red)
     }
     ElseIf($RTT -gt 90)
     {
-      Write-Host ('Although not always the case this could indicate that you are on the Puerto Rico backup circuit.') -BackgroundColor Yellow -ForegroundColor White
+      Write-Host ('  ') -BackgroundColor Yellow -ForegroundColor White -NoNewline
+      Write-Output -InputObject ($OutputTable.Yellow)
     }
     ElseIf($RTT -gt 1)
     {
-      Write-Host ('Round Trip Time is GOOD!') -BackgroundColor Green -ForegroundColor White
+      Write-Host ('  ') -BackgroundColor Green -ForegroundColor White -NoNewline
+      Write-Output -InputObject ($OutputTable.Green) 
     }
-    # }
+    if($NotRight -gt 0)
+    {
+      Write-Output -InputObject ('{0} Responded with 0 ms.  If you tested the "Localhost" one would be expected.' -f $NotRight)
+    }
   }
-  Write-Host ('{1} - {3} tested {0} off island computers and {2} responded. The average response time:' -f $TotalSites, $TimeStamp, $TotalResponses, $env:USERNAME) -ForegroundColor DarkYellow -NoNewline
-  Write-Output -InputObject (' {0} ms' -f [int]$RTT)
-
-  if($NotRight -gt 0)
+  If($Log)
   {
-    Write-Output -InputObject ('{0} Responded with 0 ms' -f $NotRight)
+    If(-not (Test-Path -Path $ReportFolder))
+    {
+      New-Item -Name $ReportFolder -ItemType Directory
+    }
+    $OutputTable.Report | Out-File -FilePath $ReportFile -Append
   }
-
-  <#  Write-Output -InputObject ('Average RTT is {0} ms.' -f [int]$RTT)
-      if ($RTT -lt 380){
-  Start-Process "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe" }#>
 }
+
+
+# For Testing:
+#Test-FiberSatellite
 
 
 
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUezfFvx1/6OAT0ckTaI/D2Fek
-# qOCgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxVp5a/ao8nhEJNPc5cZM8Wop
+# LwegggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -118,9 +179,9 @@ function Test-FiberSatellite
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUsHC8uEehlRU2vuAoObXmMDjaqzIw
-# DQYJKoZIhvcNAQEBBQAEgYAkUAQr7p1I5fwj0FoXaZekpxKilGyuo6sUkG56wf6X
-# nGu/fHsoTFvU2VFrNZk7GxhBr3XAyc1GK6MpnTj1KjjdyTHWOD7RkpIW2qP1/TBq
-# gCPDi687vL62X8OL9JAORd6ClmWZaUUk5MNJoVxnNxeqROKUX4Uj7DSBz/GFO05Z
-# WQ==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUVGpMMUO814+EqrICQnn5DsfE9+kw
+# DQYJKoZIhvcNAQEBBQAEgYAnss4R/Cr49JbYL0ArI03IOPII9hQbIPoXp3aaYhjs
+# JqAnyrAmgqnW+7FeMuDpb8kRsQmdHpyfnD4uJDdflagmMfmLbCBUxCzWFUMR10Fv
+# gWZvVp1KiOr0RMo4rF2HuZRKppWwIa46hCtRDaiXd8A+bWFigVf68pCpjh6HrDKu
+# Vw==
 # SIG # End signature block
