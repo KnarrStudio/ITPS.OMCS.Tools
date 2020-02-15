@@ -1,34 +1,75 @@
 ﻿#requires -Version 3.0
 function Repair-FolderRedirection
 {
+  <#PSScriptInfo
+
+      .VERSION 1.2
+
+      .GUID 441d0593-0138-4088-b347-712ecb929bf0
+
+      .AUTHOR Erik
+
+      .COMPANYNAME Knarr Studio
+
+      .COPYRIGHT
+
+      .TAGS Folder Redirecton Self Help 
+
+      .LICENSEURI
+
+      .PROJECTURI https://github.com/KnarrStudio/ITPS.OMCS.Tools
+
+      .ICONURI
+
+      .EXTERNALMODULEDEPENDENCIES 
+
+      .REQUIREDSCRIPTS
+
+      .EXTERNALSCRIPTDEPENDENCIES
+
+      .RELEASENOTES
+
+
+      .PRIVATEDATA
+
+  #>
   <#
       .SYNOPSIS
-      Changes the folder redirectionsettings in the registry.  This should be run prior to imaging a user's workstaion.
+      Verify and repair (redirect) the user's folder redirection.
 
       .DESCRIPTION
-      The script with verify that the path exists, and copies all of the local files to the "Remote" location, then changes the registry to mach that remote location.
+      From a normal Powershell console. The script will verify that the path exists, and copies all of the local files to the "Remote" location, then changes the registry to mach that remote location.  Changes the folder redirection settings in the registry.  This should be run prior to imaging a user's workstaion.
 
-      .PARAMETER TestSettings
-      Makes no changes but allows you to varify the settings.
-      
       .PARAMETER RemotePath
-      Makes changes and repairs the path to the home folders based on what you put here.  Such as - "$env:HOMEDRIVE\_MyComputer".
+      Makes changes to the home folders based on what you put here.  Such as - "$env:HOMEDRIVE\_MyComputer".
 
-      .PARAMETER RepairSettings
-      Sets the "What if" statment to $False
+      .PARAMETER Repair
+      Initiats the changes
+
+      .PARAMETER Verify
+      Makes no changes but allows you to Verify the settings.
 
       .EXAMPLE
-      Repair-FolderRedirection -RemotePath 'H:\_MyComputer' -RepairSettings
-      This will redirect the folders to the path on the "H:" drive.  You must use the 'RepairSettings' parameter if you want to make changes.
+      Repair-FolderRedirection -RemotePath 'H:\_MyComputer' -Repair
+      This will redirect the folders to the path on the "H:" drive.  You must use the 'Repair' parameter if you want to make changes.
 
       .EXAMPLE
-      Repair-FolderRedirection -TestSettings
+      Repair-FolderRedirection -Verify
       Sends the current settings to the screen
+
+      .NOTES
+      Really written to standardize the troubleshooting and repair of systems before they are imaged to prevent data loss.
+
+      .LINK
+      https://github.com/KnarrStudio/ITPS.OMCS.Tools
+
+      .INPUTS
+      Remote path as a string
+
+      .OUTPUTS
+      Display to console.
   #>
 
-
-
-  
   [CmdletBinding(SupportsShouldProcess,ConfirmImpact = 'High')]
   [OutputType([int])]
   Param
@@ -36,20 +77,18 @@ function Repair-FolderRedirection
     # $RemotePath Path to the Users's 'H:' drive
     [Parameter(ParameterSetName = 'Repair',ValueFromPipelineByPropertyName,Position = 0)]
     [string]$RemotePath = "$env:HOMEDRIVE\_MyComputer",
+    # Use the Repair switch make changes to settings
     [Parameter(ParameterSetName = 'Repair')]
-    [Switch]$RepairSettings,
+    [Switch]$Repair,
+    # Use the Verify switch to check the settings
     [Parameter (ParameterSetName = 'TestSettings')]
-    [Switch]$TestSettings
+    [Switch]$Verify
   )
-  
+ 
   Begin
   {
     $ConfirmPreference = 'High'
-    $WhatIfPreference = $true
-    if($RepairSettings)
-    {
-      $WhatIfPreference = $false
-    }
+    <#    $WhatIfPreference = $true;    if($Repair)    {      $WhatIfPreference = $false    }#>
     
     $CompareList = @()
 
@@ -64,7 +103,7 @@ function Repair-FolderRedirection
     
     $Keys = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders', 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
     $LocalPath = $Env:USERPROFILE
-    $errorlog = "ErrorLog-$(Get-Date -UFormat %d%S).txt"
+    $errorlog = "ErrorLog-FolderRedirection-$(Get-Date -UFormat %d%S).txt"
   }
   Process
   {
@@ -80,7 +119,7 @@ function Repair-FolderRedirection
       If(-Not(Test-Path -Path $NewPath ))
       {
         Write-Verbose -Message ('NewPath = {0}' -f $NewPath)
-        if(-Not $TestSettings)
+        if($Repair)
         {
           New-Item -Path $NewPath -ItemType Directory
         }
@@ -89,7 +128,7 @@ function Repair-FolderRedirection
       Write-Verbose -Message ('OldPath = {0}' -f $OldPath)
       try
       {
-        if(-Not $TestSettings)
+        if($Repair)
         {
           Copy-Item -Path $OldPath -Destination $RemotePath -Force -Recurse -ErrorAction Stop
         }
@@ -112,14 +151,12 @@ function Repair-FolderRedirection
         Write-Verbose -Message $newlist
         $CompareList += $newlist
        
-        <# F8 Testing::
-
+        <# F8 Testing --
             $Key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
-            Get-ItemProperty -Path $key
-       
-        ::Testing #>
+            Get-ItemProperty -Path $ke
+        #>
 
-        if(-Not $TestSettings)
+        if($Repair)
         {
           Set-ItemProperty -Path $RegKey -Name $FolderKey -Value $NewPath
         }
@@ -129,7 +166,7 @@ function Repair-FolderRedirection
   }
 
   END {
-    if($TestSettings)
+    if($Verify)
     {
       $CompareList | Sort-Object
     }
@@ -137,12 +174,17 @@ function Repair-FolderRedirection
 }
 
 
+# Testing:
+# Repair-FolderRedirection -Verify -Verbose
+# Repair-FolderRedirection -Repair -RemotePath h:\_MyComputer -Confirm 
+
+
 
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJ18WfTQbE/7w/8upxvBCHKnc
-# rHugggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU2un8rWEVM0fUvpmHzIqKRBfN
+# WqagggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -156,9 +198,9 @@ function Repair-FolderRedirection
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUsRqNwWVdyoDAihDexSKHBFCiC4ww
-# DQYJKoZIhvcNAQEBBQAEgYBfEEAQTFVa0BDnSDVUvBoDwmBdG/nZQPjbYt4wP+Hz
-# DQnhKSeV8ZYlGi8I55SSIQqDyKtUpGKkSU0/YIYF1ctPXzZTpoDh/PcePnKJIdxK
-# 5ff9skAmuF6faVd8EfO/Rb2innWZkInyP9LGVfiikAMfSRij5uRkkHWattAXPxLJ
-# nw==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUeQztwOeN4/2CCfeMAzaVZZcmm1Uw
+# DQYJKoZIhvcNAQEBBQAEgYAFbGKV1og5VYk0cI/OMBDh0eNbNniVzd5Cwq/pkHUi
+# y2kravI322GHntnpa8sJsGXWssjSRpCG9M6HoN7Cf4hJo1fG6xaoL4vsoRYkq0S2
+# MaCTDqF/Fc24s/OzXP6i2ia3ddYZ28as4tVxAa1XXRMr9UR8kEAXLSCyhpYPkfQa
+# lw==
 # SIG # End signature block
