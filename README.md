@@ -20,7 +20,7 @@ The original idea was to create a series of tools that could be used by the desk
 
 ```PowerShell 
 
-Test-FiberSatellite -Sites Value -OneLineOutput
+Test-FiberSatellite -Sites Value -Simple
 
 ``` 
 

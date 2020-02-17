@@ -14,25 +14,37 @@
       Two or more of the replication partner's Net Bios Name
 
       .PARAMETER test
-      Changes sleep time to 1 second.  
+      Test is a switch that is used for testing the script locally.  Will be removed in the future.
 
-      .EXAMPLE
       .EXAMPLE
       Test-Replication -DfsrServers Server1, Server2, Server3 -FilePath  \folder-1\test-date.txt
     
-      Name              Value
-      ----              -----
-      Server1           12/14/2019 11:06:29 - Good
-      Server3           12/14/2019 11:06:29 - File Missing
-      Server2           12/14/2019 11:06:30 - Failed
+      DFSR Replication Test
 
-      Good: The file has been replicated 
-      Failed: The file has not replicated 
+      Server1 
+      Status: Good 
+      Message Replicated: 2/17/2020 08:16:06 - MyUserName Tested replication of this file from Workstation-11
+      File Path: \\Server1\Folder-1\test-date.txt
+
+      Server2 
+      Status: Failed 
+      Message Replicated: 2/17/2020 08:16:06 - MyUserName Tested replication of this file from Workstation-11
+      File Path: \\Server2\Folder-1\test-date.txt
+
+      Server3 
+      Status: File Missing 
+      Message Replicated: 2/17/2020 08:16:06 - MyUserName Tested replication of this file from Workstation-11
+      File Path: \\Server3\Folder-1\test-date.txt
+
+
+      Good: The file has been replicated
+      Failed: The file has not replicated
       File Missing: is just that
 
       The file contents will look like:
-      12/15/2019 10:01:00 - MyUserName Tested replication of this file from  Workstation1
-      12/15/2019 10:03:48 - MyUserName Tested replication of this file from  Workstation1
+      12/15/2019 10:01:00 - MyUserName Tested replication of this file from  Workstation-11
+      12/15/2019 10:03:48 - MyUserName Tested replication of this file from  Workstation-11
+      2/17/2020 08:16:06 - MyUserName Tested replication of this file from Workstation-11
 
       .NOTES
       Place additional notes here.
@@ -48,7 +60,6 @@
       Screen and file
   #>
 
-  [CmdletBinding()]
   param
   (
     [Parameter(Mandatory ,HelpMessage = 'Enter a file and path name.  Example "\Sharename\Filename.log"')]
@@ -60,95 +71,198 @@
     [String[]]$DfsrServers,
     [Switch]$test
   )
-   
-  $Results = [ordered]@{}
-  $FirstDfsrServer = $DfsrServers[0]
-  $TestFilePath = ('\\{0}{1}' -f $FirstDfsrServer, $FilePath)   
   
-  if(-not $test)
-  {
-    [int]$time = 5
-    $instructions = "`n Good: The file has been replicated `n Failed: The file has not replicated `n File Missing: is just that"
-  }
-  else
-  {
-    [int]$time = 1
-    $instructions = 'TEST MODE'
-  }
- 
-  
-  function Get-TimeStamp 
-  {
-    $(Get-Date -Format G)
-  }
-  Write-Debug -Message ('Time: {0}' -f $time)
-  
-  $DateTime = Get-Date -Format G
-  Write-Debug -Message ('Date Time: {0}' -f $DateTime)
-  
-  $DateTimeUserStamp = ('{0} - {1} Tested replication of this file from {2}' -f $DateTime, $env:username, $env:COMPUTERNAME)
-  Write-Debug -Message ('Date Time User Stamp: {0}' -f $DateTimeUserStamp)
-  
-  #$DateTimeUserStamp = ('{0} - {1}' -f $DateTime, $env:username)
-  $DateTimeUserStamp | Out-File -FilePath $TestFilePath  -Append
+  BEGIN { 
+    <#   Testing  
+        $DfsrServers = 'Localhost', 'LENOVA-11' 
+        $FilePath = '\Folder-1\test-date.txt'
+        $Server = 'Localhost'
+    Testing  #>
 
-  #Only for Testing.  Comment ou for real script
-  #Copy-Item -Path '.\Server-1\test-date.txt' -Destination '.\Server-2\test-date.txt'
-  
-  foreach($Server in $DfsrServers)
-  {
-    Write-Debug -Message ('Server:  {0}' -f $Server)
-    Write-Debug -Message ('File path: {0}' -f $FilePath)
+    # Time Delay used for the amount of time to wait for replication to occur
+    [int]$TimeDelay = 30
+    
+    # Getting the first server in the list
+    $FirstDfsrServer = $DfsrServers[0]
+    
+    # Creating the Path
+    $TestFilePath = ('\\{0}{1}' -f $FirstDfsrServer, $FilePath)   
+    
+    # Results storage hash table
+    $Results = [ordered]@{}
 
-    $ServerShareFile = ('\\{0}{1}' -f $Server, $FilePath)
-    Write-Debug -Message ('Server Share File: {0}' -f $ServerShareFile)
+    # Messages hash table
+    $UserMessages = @{
+      Msg1        = 'Good: The file has been replicated'
+      Msg2        = 'Failed: The file has not replicated'
+      Msg3        = 'File Missing: is just that'
+      OutputTitle = 'DFSR Replication Test'
+    } 
 
-    If(Test-Path -Path $ServerShareFile)
+    function Test-ModeNow 
     {
-      #Sleep to give the file time to replicate
-      Start-Sleep -Seconds $time
+      <#
+          .SYNOPSIS
+          Test-ModeNow is trigger by the "Test" switch.  It is used for testing the script locally.  Will be removed in the future.
+      #>
 
-      if($(Get-Content -Path $ServerShareFile  | Select-String -Pattern $DateTimeUserStamp))
+      $tempfilepath = '.\Folder-2\test-date.txt'
+      if($TestFilePath.Length -gt 0)
       {
-        $TimeStamp = Get-TimeStamp
-        $Results.Add($Server,$(('{0} - Good' -f $TimeStamp)))
+        #$fileProperty = Get-ItemProperty $TestFilePath | Select-Object -Property *
+        $null = Copy-Item -Path $TestFilePath -Destination $tempfilepath
+        $null = New-Item -Path $TestFilePath -ItemType File -Force
       }
-      else
-      {
-        Start-Sleep -Seconds $time*2
 
-        if($(Get-Content -Path $ServerShareFile  | Select-String -Pattern $DateTimeUserStamp))
+      $copiedFile = Get-ItemProperty -Path $tempfilepath | Select-Object -Property *
+      if($copiedFile.Length -gt 0)
+      {
+        $null = Copy-Item -Path $tempfilepath -Destination $TestFilePath -Force
+      }
+    }
+    function Get-TimeStamp 
+    {
+      <#
+          .SYNOPSIS
+          Time stamp in format - 2/17/2020 10:56:12 
+      #>
+      Write-Debug -Message 'function Get-TimeStamp'
+      $(Get-Date -Format G)
+    }
+
+    function Save-Results
+    {
+      <#
+          .SYNOPSIS
+          Consolidated Results 
+      #>
+
+
+      param
+      (
+        [Parameter(Position = 0)]
+        [string] $TimeStamp = (Get-TimeStamp),
+        [Parameter(Mandatory)]
+        [string] $Server,
+        [Parameter(Mandatory)]
+        [string] $Status,
+        [Parameter(Mandatory)]
+        [string] $ReplicaStatement,
+        [Parameter(Mandatory)]
+        [string] $ServerShareFile
+
+      )
+
+      Write-Debug -Message ('function Save-Results - Server: {0}' -f $Server)
+      Write-Debug -Message ('function Save-Results - Status: {0}' -f $Status)
+      Write-Debug -Message ('function Save-Results - Statement: {0}' -f $ReplicaStatement)
+      Write-Debug -Message ('function Save-Results - File Share Path: {0}' -f $ServerShareFile)
+
+      $script:Results = @{}
+      $Results.$Server = [ordered]@{}
+          
+      $Results.Item($Server).Add('Status',$Status)
+      $Results.Item($Server).Add('Time',$ReplicaStatement)
+      $Results.Item($Server).Add('Path',$ServerShareFile)
+    }
+  }
+
+  PROCESS {
+
+    Write-Debug -Message ('Time: {0}' -f $TimeDelay)
+  
+    $TimeStamp = Get-TimeStamp
+    Write-Debug -Message ('Date Time: {0}' -f $TimeStamp)
+  
+    $ReplicaStatement = ('{0} - {1} initiated the replication test of this file from {2}' -f $TimeStamp, $env:username, $env:COMPUTERNAME)
+    Write-Debug -Message ('Date Time User Stamp: {0}' -f $ReplicaStatement)
+  
+    #$ReplicaStatement = ('{0} - {1}' -f $DateTime, $env:username)
+    $ReplicaStatement | Out-File -FilePath $TestFilePath  -Append
+
+    #Single host testing
+    if ($test)
+    {
+      Test-ModeNow
+    }
+
+
+    foreach($Server in $DfsrServers)
+    {
+      $i = 0
+      Write-Debug -Message ('foreach Server Loop - Server:  {0}' -f $Server)
+      Write-Debug -Message ('foreach Server Loop - File path: {0}' -f $FilePath)
+      Write-Debug -Message ('foreach Server Loop - Reset $i to: {0}' -f $i)
+
+      $ServerShareFile = ('\\{0}{1}' -f $Server, $FilePath)
+      Write-Debug -Message ('foreach Server Loop - Server Share File: {0}' -f $ServerShareFile)
+
+
+      If(Test-Path -Path $ServerShareFile)
+      {
+        $StopTime = (Get-Date).AddSeconds($TimeDelay)
+        while($((Get-Date) -le $StopTime)) 
+        {
+          Write-Progress -Activity ('Testing {0}' -f $FilePath) -PercentComplete ($i / $TimeDelay*100)
+          Start-Sleep -Seconds 1
+          $i++
+
+          #Single host testing
+          if ($test)
+          {
+            Test-ModeNow
+          }
+
+          $FileTest = $(Get-Content -Path $ServerShareFile  | Select-String -Pattern $ReplicaStatement)
+          Write-Debug -Message ('File test returns: {0}' -f $FileTest)
+        
+          If($FileTest)
+          {
+            break
+          }
+        }
+
+        if($FileTest)
         {
           $TimeStamp = Get-TimeStamp
-          $Results.Add($Server,$(('{0} - Good' -f $TimeStamp)))
+          Save-Results -TimeStamp $TimeStamp -Server $Server -Status Good -ReplicaStatement $ReplicaStatement -ServerShareFile $ServerShareFile 
         }
         else
         {
           $TimeStamp = Get-TimeStamp
-          $Results.Add($Server,$(('{0} - Failed' -f $TimeStamp)))
+          Save-Results -TimeStamp $TimeStamp -Server $Server -Status Failed -ReplicaStatement $ReplicaStatement -ServerShareFile $ServerShareFile 
         }
       }
-    }
-    Else 
-    {
-      $TimeStamp = Get-TimeStamp
-      $Results.Add($Server,$(('{0} - File Missing' -f $TimeStamp)))
+      Else 
+      {
+        $TimeStamp = Get-TimeStamp
+        Save-Results -TimeStamp $TimeStamp -Server $Server -Status 'File Missing' -ReplicaStatement $ReplicaStatement -ServerShareFile $ServerShareFile 
+      }
     }
   }
+  END {
+              
+    Write-Output -InputObject ("{1} - {0}`n" -f $UserMessages.OutputTitle, $TimeStamp)
+    foreach($DfsrPartner in $Results.Keys)
+    {
+      $Server = $Results[$DfsrPartner]
+      " {0}`n - Status: {1} `n - Replicated Statement: {2}`n - File Path: {3}`n`n" -f $DfsrPartner, $Server.Status, $Server.Time, $Server.Path
+    }
+    Write-Output -InputObject ("{0}`n{1}`n{2}" -f $UserMessages.Msg1, $UserMessages.Msg2, $UserMessages.Msg3)
 
-  $Results
-  Write-Output -InputObject ('{0}' -f $instructions )
+  }
 }
-
-
-#Test-Replication -DfsrServers 'Localhost', '$env:computername' -FilePath \folder-1\test-date.txt
+  
+  
+  
+# Test-Replication -DfsrServers 'Localhost', $env:COMPUTERNAME -FilePath \Folder-1\test-date.txt -test -Debug
 
 
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUFWxf2gVTnyTsQdb2HMt9m4ez
-# npygggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUmFIL35hd5MsuP4LCmXI9X3Fv
+# lyOgggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -162,9 +276,9 @@
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUg938TUrsQHAZDGuFZQmVTTuF4ggw
-# DQYJKoZIhvcNAQEBBQAEgYBFd6kXu88q2/B8Hg0WZBxUBHOwPDwc/L/E+LCUv6Au
-# SXXVW6pmp1rtVhstI3IQHmydaaxWyjTmHnOG3ZlJCea5D8/it8SKAl6g1Lvxc0sg
-# 0xOp4teGDW98M44O2p51DXcCDcD5IK7YGFZIP6C8xyALvrKEtfLFMdU3rsXiWHLn
-# wQ==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUSTjs7wELzc2B9fw0o22QODWbhAww
+# DQYJKoZIhvcNAQEBBQAEgYBih38haYrHpkk4BWkkXrjtjePygM85gXZeJ4VCEXdD
+# j+GL0IOpSHSOR0Gk5faJ7oWojvzJu8zzHFndJJcX+BaP6vX6ss+LId3oZnVlv1ww
+# O4tRn7hSpKAQ2LXNREZ/W3eJjVBPnVWM11sO4aaEa6c7Rx40Dnb6PK66fz+NofTh
+# Tw==
 # SIG # End signature block
