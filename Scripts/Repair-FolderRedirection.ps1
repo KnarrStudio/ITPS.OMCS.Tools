@@ -3,9 +3,9 @@ function Repair-FolderRedirection
 {
   <#PSScriptInfo
 
-      .VERSION 1.2
+      .VERSION 1.3
 
-      .GUID 441d0593-0138-4088-b347-712ecb929bf0
+      .GUID cc7ee278-5103-4711-909c-315e3915ba92
 
       .AUTHOR Erik
 
@@ -38,7 +38,10 @@ function Repair-FolderRedirection
       Verify and repair (redirect) the user's folder redirection.
 
       .DESCRIPTION
-      From a normal Powershell console. The script will verify that the path exists, and copies all of the local files to the "Remote" location, then changes the registry to mach that remote location.  Changes the folder redirection settings in the registry.  This should be run prior to imaging a user's workstaion.
+      From a normal Powershell console. 
+      The script will verify that the path exists, and copies all of the local files to the "Remote" location, then changes the registry to mach that remote location.  
+      Changes the folder redirection settings in the registry.  
+      This should be run prior to imaging a user's workstaion.
 
       .PARAMETER RemotePath
       Makes changes to the home folders based on what you put here.  Such as - "$env:HOMEDRIVE\_MyComputer".
@@ -46,15 +49,15 @@ function Repair-FolderRedirection
       .PARAMETER Repair
       Initiats the changes
 
-      .PARAMETER Verify
-      Makes no changes but allows you to Verify the settings.
+      .PARAMETER Silent
+      Suppresses output to console
 
       .EXAMPLE
       Repair-FolderRedirection -RemotePath 'H:\_MyComputer' -Repair
       This will redirect the folders to the path on the "H:" drive.  You must use the 'Repair' parameter if you want to make changes.
 
       .EXAMPLE
-      Repair-FolderRedirection -Verify
+      Repair-FolderRedirection
       Sends the current settings to the screen
 
       .NOTES
@@ -80,16 +83,13 @@ function Repair-FolderRedirection
     # Use the Repair switch make changes to settings
     [Parameter(ParameterSetName = 'Repair')]
     [Switch]$Repair,
-    # Use the Verify switch to check the settings
-    [Parameter (ParameterSetName = 'TestSettings')]
-    [Switch]$Verify
+    [Switch]$Silent
   )
  
   Begin
   {
     $ConfirmPreference = 'High'
-    <#    $WhatIfPreference = $true;    if($Repair)    {      $WhatIfPreference = $false    }#>
-    
+   
     $CompareList = @()
 
     $FolderList = @{
@@ -166,25 +166,31 @@ function Repair-FolderRedirection
   }
 
   END {
-    if($Verify)
+    if(-not $Silent)
     {
       $CompareList | Sort-Object
+      Write-Output -InputObject 'Log File: ', $env:TEMP\FolderRedirection.log""
     }
+    $CompareList |
+    Sort-Object |
+    Out-File -FilePath "$env:TEMP\FolderRedirection.log"
   }
 }
 
 
 # Testing:
-# Repair-FolderRedirection -Verify -Verbose
+# Repair-FolderRedirection -Silent
 # Repair-FolderRedirection -Repair -RemotePath h:\_MyComputer -Confirm 
+
+
 
 
 
 # SIG # Begin signature block
 # MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU2un8rWEVM0fUvpmHzIqKRBfN
-# WqagggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjmAd7kYOiD3flXoNRiLrKxTD
+# Zs2gggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
 # MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
 # MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
 # BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
@@ -198,9 +204,9 @@ function Repair-FolderRedirection
 # fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
 # w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUeQztwOeN4/2CCfeMAzaVZZcmm1Uw
-# DQYJKoZIhvcNAQEBBQAEgYAFbGKV1og5VYk0cI/OMBDh0eNbNniVzd5Cwq/pkHUi
-# y2kravI322GHntnpa8sJsGXWssjSRpCG9M6HoN7Cf4hJo1fG6xaoL4vsoRYkq0S2
-# MaCTDqF/Fc24s/OzXP6i2ia3ddYZ28as4tVxAa1XXRMr9UR8kEAXLSCyhpYPkfQa
-# lw==
+# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUctcJjKxjdAhy4CGJaV9LBJ0FOC4w
+# DQYJKoZIhvcNAQEBBQAEgYCZhwOAn0fhGce6aS0MRuiKRGNtUWlW6yJerLacIQGx
+# X/O3EJtWgSQBBXhu2DDPFLOWig0ghcIkBB4srhfUGiNMPZ9ER3Kyi8KpOSM/Lku9
+# yUf5aaPSRxLJR0OTObBMzCgaxshSnOBy2V+JnU8uJf1FeEcivu4c5yjFfnyl/HIO
+# 6A==
 # SIG # End signature block
