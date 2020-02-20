@@ -19,6 +19,6 @@ function Start-DailyChecks
   Test-FiberSatellite -Sites www.yahoo.com
   Test-PrinterStatus -PrintServer Printserver -PingReportFolder \\fileshare
   Test-AdWorkstationConnections -ADSearchBase xxx -PingReportFolder \\fileshare -OutputFileName WorkstationReport
-  Import-Csv -Path WorkstationList | Get-UpTime -ShowOfflineComputers -DisplayOnly
+  Import-Csv -Path WorkstationList | Get-SystemUpTime -ShowOfflineComputers -DisplayOnly
 }
 
