@@ -47,24 +47,20 @@
 
   #>
 
-
-
-
-  [cmdletbinding(DefaultParameterSetName = 'SortList',SupportsPaging = $true)]
+    [cmdletbinding(DefaultParameterSetName = 'SortList',SupportsPaging = $true)]
   Param(
-    [Parameter(Mandatory = $false,HelpMessage = 'Get list of installed software by installed date (InstallDate) or alphabetically (DisplayName)',ParameterSetName = 'SortList')]
-    [Parameter(ParameterSetName = 'SoftwareName')]
-    [ValidateSet('InstallDate', 'DisplayName','DisplayVersion')] 
-    [Object]$SortList,
     
     [Parameter(Mandatory = $true,HelpMessage = 'At least part of the software name to test', Position = 0,ParameterSetName = 'SoftwareName')]
     [String[]]$SoftwareName,
-    [Parameter(Mandatory = $false,HelpMessage = 'list of installed software by installed date (InstallDate) or alphabetically (DisplayName)', Position = 1,ParameterSetName = 'SoftwareName')]
     [Parameter(ParameterSetName = 'SortList')]
-    [Switch]$File
+    [Parameter(ParameterSetName = 'SoftwareName')]
+    [ValidateSet('InstallDate', 'DisplayName','DisplayVersion')] 
+    [String]$SortList = 'InstallDate'
+    
   )
   
   Begin { 
+    $SoftwareOutput = @()
     $InstalledSoftware = (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*)
   }
   
@@ -73,12 +69,8 @@
     {
       if($SoftwareName -eq $null) 
       {
-        if($SortList -eq $null)
-        {
-          $SortList = 'DisplayName'
-        }
-        $InstalledSoftware |
-        Sort-Object -Descending -Property $SortList |
+        $SoftwareOutput = $InstalledSoftware |
+        #Sort-Object -Descending -Property $SortList |
         Select-Object -Property @{
           Name = 'Date Installed'
           Exp  = {
@@ -95,14 +87,14 @@
       {
         foreach($Item in $SoftwareName)
         {
-          $InstalledSoftware |
+          $SoftwareOutput += $InstalledSoftware |
           Where-Object -Property DisplayName -Match -Value $Item |
           Select-Object -Property @{
             Name = 'Version'
             Exp  = {
               $_.DisplayVersion
             }
-          }, DisplayName
+          }, DisplayName # , UninstallString 
         }
       }
     }
@@ -112,7 +104,7 @@
       [Management.Automation.ErrorRecord]$e = $_
 
       # retrieve information about runtime error
-      $info = [PSCustomObject]@{
+      $info = New-Object -TypeName PSObject -Property @{
         Exception = $e.Exception.Message
         Reason    = $e.CategoryInfo.Reason
         Target    = $e.CategoryInfo.TargetName
@@ -126,7 +118,30 @@
     }
   }
   
-  End{ }
+  End{ 
+    Switch ($SortList){
+      'DisplayName' 
+      {
+        $SoftwareOutput |
+        Sort-Object -Property displayname
+      }
+      'DisplayVersion' 
+      {
+        $SoftwareOutput |
+        Sort-Object -Property 'Version'
+      }
+      'UninstallString'
+      {
+
+      }
+      default  
+      {
+        $SoftwareOutput |
+        Sort-Object -Property 'Date Installed'
+      } #'InstallDate'
+      
+    }
+  }
 }
 
 #
@@ -136,26 +151,26 @@
  
 
 # SIG # Begin signature block
-# MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
+# MIID/AYJKoZIhvcNAQcCoIID7TCCA+kCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUhC/lrWetbnRrkFHbCzRwJ7mw
-# G+ygggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
-# MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
-# MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
-# BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
-# CxCw5v9xTbCiiVcPvpBl7Vr4I2eR/ZF5GN88XzJNAeELbJHJdfcCvhgNLK/F4DFp
-# kvf2qUb6l/ayLvpBBg6lcFskhKG1vbEz+uNrg4se8pxecJ24Ln3IrxfR2o+BAgMB
-# AAGjYDBeMBMGA1UdJQQMMAoGCCsGAQUFBwMDMEcGA1UdAQRAMD6AEMry1NzZravR
-# UsYVhyFVVoyhGDAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlboIQyWSKL3Rtw7JMh5kR
-# I2JlijAJBgUrDgMCHQUAA4GBAF9beeNarhSMJBRL5idYsFZCvMNeLpr3n9fjauAC
-# CDB6C+V3PQOvHXXxUqYmzZpkOPpu38TCZvBuBUchvqKRmhKARANLQt0gKBo8nf4b
-# OXpOjdXnLeI2t8SSFRltmhw8TiZEpZR1lCq9123A3LDFN94g7I7DYxY1Kp5FCBds
-# fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
-# w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
-# ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUURyjyxggCrvLjj4MdESrT2rsjDkw
-# DQYJKoZIhvcNAQEBBQAEgYCeryanlX/X0Gzx2WJHGejwcBcycQ/28NpJk0cSnZwZ
-# /tLvQG2hKF8Y9znwVWjlIYm+wLmF4Rz5nQu2L4JxetQogOeLFUyU1mHWo56aeYbY
-# s8ji4xGvgad7uH2PJSKLegIo2s4wUzYTIV1kbub3lhwFcSrl3aabIXseLuYkn4Jt
-# Mw==
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/0DlqtO3Ha4bduESR+vsY9oZ
+# j1KgggIRMIICDTCCAXagAwIBAgIQapk6cNSgeKlJl3aFtKq3jDANBgkqhkiG9w0B
+# AQUFADAhMR8wHQYDVQQDDBZLbmFyclN0dWRpb1NpZ25pbmdDZXJ0MB4XDTIwMDIx
+# OTIyMTUwM1oXDTI0MDIxOTAwMDAwMFowITEfMB0GA1UEAwwWS25hcnJTdHVkaW9T
+# aWduaW5nQ2VydDCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAxtuEswl88jvC
+# o69/eD6Rtr5pZikUTNGtI2LqT1a3CZ8F6BCC1tp0+ftZLppxueX/BKVBPTTSg/7t
+# f5nkGMFIvbabMiYtfWTPr6L32B4SIZayruDkVETRH74RzG3i2xHNMThZykUWsekN
+# jAer+/a2o7F7G6A/GlH8kan4MGjo1K0CAwEAAaNGMEQwEwYDVR0lBAwwCgYIKwYB
+# BQUHAwMwHQYDVR0OBBYEFGp363bIyuwL4FI0q36S/8cl5MOBMA4GA1UdDwEB/wQE
+# AwIHgDANBgkqhkiG9w0BAQUFAAOBgQBkVkTuk0ySiG3DYg0dKBQaUqI8aKssFv8T
+# WNo23yXKUASrgjVl1iAt402AQDHE3aR4OKv/7KIIHYaiFTX5yQdMFoCyhXGop3a5
+# bmipv/NjwGWsYrCq9rX2uTuNpUmvQ+0hM3hRzgZ+M2gmjCT/Pgvia/LJiHuF2SlA
+# 7wXAuVRh8jGCAVUwggFRAgEBMDUwITEfMB0GA1UEAwwWS25hcnJTdHVkaW9TaWdu
+# aW5nQ2VydAIQapk6cNSgeKlJl3aFtKq3jDAJBgUrDgMCGgUAoHgwGAYKKwYBBAGC
+# NwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgor
+# BgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU6CvzDSrj
+# WPtyFWgZpedLiQbUHcYwDQYJKoZIhvcNAQEBBQAEgYAyHKKgFJIhsikAZRWRkHZi
+# KzZUJTVtaYgwZvyvN9zK0W1d3wKYwa9snk1OWIIcDbQSWcmR01untw0tt4ekZqVk
+# aV//3xPiucQwRN3GM2kRVLY5bLZ87Qq58FGJXyOrsIptMOaBlG4n2lAmpW+y4utK
+# 6ycN1BDCwGe333Pb1HOg0Q==
 # SIG # End signature block
