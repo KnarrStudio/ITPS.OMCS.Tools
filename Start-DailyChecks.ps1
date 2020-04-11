@@ -5,6 +5,7 @@
 
     .DESCRIPTION
     Use this to run the daily checks.  It uses the "MyLocalParameters.txt" file and splat to set the parameters for each of the modules.
+    Modify the "MyLocalParameters.txt" file to complete the 
 
     .EXAMPLE
     Start-DailyChecks
@@ -16,7 +17,8 @@
 # $scriptDir = $PSScriptRoot
 
 # Setting the file and path to a variable
-$MyLocalParameters = "$PSScriptRoot\MyLocalParameters.txt"
+#$MyLocalParameters = "$PSScriptRoot\MyLocalParameters.txt"
+$MyLocalParameters = ".\MyLocalParameters.txt"
 
 if($erik -ne 1)
 {
@@ -25,12 +27,14 @@ if($erik -ne 1)
 }
  
 Invoke-Expression -Command (Get-Content $MyLocalParameters | Out-String )
-#Clear-Host
+Clear-Host
 
 
-
+If(Test-FiberSatellite)
+{
 Test-FiberSatellite @FiberSatellite
-  
+}
+ 
 If($InstalledSoftware)
 {
   Get-InstalledSoftware @InstalledSoftware
@@ -38,10 +42,10 @@ If($InstalledSoftware)
 
 If($PrinterStatus)
 {
-  #Test-PrinterStatus @PrinterStatus
+  Test-PrinterStatus @PrinterStatus
 }
   
-#Test-AdWorkstationConnections -ADSearchBase xxx -PingReportFolder \\fileshare -OutputFileName WorkstationReport
+Test-AdWorkstationConnections @AdWorkstationConnections
 #Import-Csv -Path WorkstationList | Get-UpTime -ShowOfflineComputers -DisplayOnly
 
 
