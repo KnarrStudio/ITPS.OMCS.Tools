@@ -1,4 +1,5 @@
-﻿function Test-SQLConnection
+﻿#requires -Version 3.0
+function Test-SQLConnection
 {
   <#
       .SYNOPSIS
@@ -27,23 +28,44 @@
       .OUTPUTS
       List of output types produced by this function.
 
-      $TimeStamp = Get-Date -Format G 
-
-
   #>
 
     
-  [OutputType([bool])]
+  #[OutputType([bool])]
   Param
   (
     [Parameter(Mandatory,HelpMessage = 'Add SQL ServerNAme',
-        ValueFromPipelineByPropertyName,Position = 0)]
+    ValueFromPipelineByPropertyName,Position = 0)]
     [String]$ConnectionString,
     [Parameter (ParameterSetName = 'Log')]
     [Switch]$Log,
     [Parameter (ParameterSetName = 'Log')]
-    [String]$ReportFolder = "$env:temp\Reports\SqlConnection"
+    [String]$ReportFolder = 'c:\temp\Reports\SqlConnection'
   )
+  $ReportFile = (('{0}\FiberSatellite.log' -f $ReportFolder))
+  function Write-Log
+  {
+    param
+    (
+      $ReportFile,
+      $ConnectionString,
+      $ReportList,
+      $ReportFolder
+    )
+    $TimeStamp = Get-Date -Format G 
+  
+
+    If(-not (Test-Path -Path $ReportFolder))
+    {
+      $null = New-Item -Path $ReportFolder -ItemType Directory
+    }
+    ('{0} - {1} tested: {2}' -f  $TimeStamp, $env:USERNAME, $ConnectionString) | Out-File -FilePath $ReportFile -Append
+    $ReportList | Out-File -FilePath $ReportFile -Append
+    ('-' * 30) | Out-File -FilePath $ReportFile -Append
+    Write-Output -InputObject ('You can find the full report at: {0}' -f $ReportFile)
+  }
+  
+
   try
   {
     $sqlConnection = New-Object -TypeName System.Data.SqlClient.SqlConnection -ArgumentList $ConnectionString
@@ -52,26 +74,20 @@
 
     $sqlConnection.Close()
 
-
-    return $true
+    If($Log)
+    {
+      Write-Log   $ReportList = $true
+      #return $true
+    }
   }
   catch
   {
-    return $false
-  }
-  If($Log)
-  {
-  $TimeStamp = Get-Date -Format G 
-    If(-not (Test-Path -Path $ReportFolder))
+    If($Log)
     {
-      New-Item -Path $ReportFolder -ItemType Directory
+      $ReportList = $false
+      #return $false
     }
-    $OutputTable.Report | Out-File -FilePath $ReportFile -Append
-    $ReportList | Out-File -FilePath $ReportFile -Append
-    ('-' * 30) | Out-File -FilePath $ReportFile -Append
-    Write-Output -InputObject ('You can find the full report at: {0}' -f $ReportFile)
-    Start-Process -FilePath notepad -ArgumentList $ReportFile
   }
 }
 
-Test-SQLConnection
+# Test-SQLConnection -ConnectionString testserver -Log
