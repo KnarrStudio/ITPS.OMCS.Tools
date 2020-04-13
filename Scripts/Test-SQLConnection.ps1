@@ -1,71 +1,44 @@
 ﻿#requires -Version 3.0
-function Test-SQLConnection
-{
-  <#
-      .SYNOPSIS
-      Describe purpose of "Test-SQLConnection" in 1-2 sentences.
 
-      .DESCRIPTION
-      Add a more complete description of what the function does.
-
-      .PARAMETER ConnectionString
-      Describe parameter -ConnectionString.
-
-      .EXAMPLE
-      Test-SQLConnection -ConnectionString Value
-      Describe what this call does
-
-      .NOTES
-      Place additional notes here.
-
-      .LINK
-      URLs to related sites
-      The first link is opened by Get-Help -Online Test-SQLConnection
-
-      .INPUTS
-      List of input types that are accepted by this function.
-
-      .OUTPUTS
-      List of output types produced by this function.
-
-  #>
-
-    
-  #[OutputType([bool])]
-  Param
-  (
-    [Parameter(Mandatory,HelpMessage = 'Add SQL ServerNAme',
-    ValueFromPipelineByPropertyName,Position = 0)]
-    [String]$ConnectionString,
-    [Parameter (ParameterSetName = 'Log')]
-    [Switch]$Log,
-    [Parameter (ParameterSetName = 'Log')]
-    [String]$ReportFolder = 'c:\temp\Reports\SqlConnection'
-  )
-  $ReportFile = (('{0}\FiberSatellite.log' -f $ReportFolder))
-  function Write-Log
+function Write-Report
   {
     param
     (
-      $ReportFile,
-      $ConnectionString,
-      $ReportList,
-      $ReportFolder
+      [Parameter(Position = 0)][String]$TestName = 'ReportDefault',
+      [Parameter(Position = 1)][object]$ReportOutput = 'No Output',
+      [Parameter(Position = 2)][String]$ReportFolder = "$env:HOMEDRIVE\temp\WriteReport",
+      [Parameter(Position = 3)][String]$ReportFile = 'ReportFile.txt'
+      
     )
-    $TimeStamp = Get-Date -Format G 
-  
 
-    If(-not (Test-Path -Path $ReportFolder))
-    {
-      $null = New-Item -Path $ReportFolder -ItemType Directory
+    $TimeStamp = Get-Date -Format G 
+    $ReportPath = ('{0}\{1}' -f $ReportFolder,$ReportFile)
+  
+    If(-not (Test-Path -Path $ReportPath))    {
+      If(-not (Test-Path -Path $ReportFolder))      {
+        $null = New-Item -Path $ReportFolder -ItemType Directory      }
+    If(-not (Test-Path -Path $ReportPath))      {   
+       $null = New-Item -Path $ReportPath -ItemType File      }
     }
-    ('{0} - {1} tested: {2}' -f  $TimeStamp, $env:USERNAME, $ConnectionString) | Out-File -FilePath $ReportFile -Append
-    $ReportList | Out-File -FilePath $ReportFile -Append
-    ('-' * 30) | Out-File -FilePath $ReportFile -Append
-    Write-Output -InputObject ('You can find the full report at: {0}' -f $ReportFile)
+
+    ('{0} - {1} tested {2} from {3}' -f  $TimeStamp, $env:USERNAME, $TestName,$env:COMPUTERNAME) | Out-File -FilePath $ReportPath -Append
+    $ReportOutput | Out-File -FilePath $ReportPath -Append
+    ('-' * 30) | Out-File -FilePath $ReportPath -Append
+    Write-Output -InputObject ('You can find the full report at: {0}' -f $ReportPath)
   }
   
 
+function Test-SQLConnection
+{
+    
+  [OutputType([bool])]
+  Param
+  (
+    [Parameter(Mandatory,HelpMessage = 'Add SQL ServerName',
+    ValueFromPipelineByPropertyName,Position = 0)]
+    [String]$ConnectionString
+  )
+  
   try
   {
     $sqlConnection = New-Object -TypeName System.Data.SqlClient.SqlConnection -ArgumentList $ConnectionString
@@ -74,20 +47,19 @@ function Test-SQLConnection
 
     $sqlConnection.Close()
 
-    If($Log)
-    {
-      Write-Log   $ReportList = $true
-      #return $true
-    }
+ 
+      return $true
   }
   catch
   {
-    If($Log)
-    {
-      $ReportList = $false
-      #return $false
-    }
+      return $false
   }
 }
 
-# Test-SQLConnection -ConnectionString testserver -Log
+$ReportOutput = [Collections.ArrayList]@()
+$ReportOutput += 'testserver'
+$ReportOutput += Test-SQLConnection -ConnectionString testserver
+
+Write-Report -TestName TestSqlConnection -ReportOutput $ReportOutput -ReportFolder 'C:\temp\Reports\TestSqlConnection' -ReportFile  SqlConnection.txt
+      
+$ReportOutput
