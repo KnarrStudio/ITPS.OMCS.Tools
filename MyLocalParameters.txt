@@ -1,6 +1,7 @@
+
 $FiberSatellite = @{
 Sites = ('www.google.com','www.bing.com','www.yahoo.com')
-OneLineOutput = $True
+Simple = $True
 }
 
 #$PrinterStatus = @{
@@ -13,9 +14,9 @@ OneLineOutput = $True
 
 # $Folders = @{}
 
-$InstalledSoftware = @{
-SortList = 'DisplayName'
-}
+# $InstalledSoftware = @{SortList = 'DisplayName';}
+
+$SystemUpTime = @{ComputerName = ;BootOnly = $True}
 
 # $SystemUpTime = @{ComputerName = ; ShowOfflineComputers = $True;BootOnly;FileOnly;OutCsv = }
 
@@ -24,6 +25,8 @@ SortList = 'DisplayName'
 # $FolderRedirection = @{RemotePath = ;TestSettings = $True }
 
 # $AdWorkstationConnections = @{}
+
+
 
 
 
