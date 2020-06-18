@@ -49,9 +49,9 @@ function Test-FiberSatellite
 
   <#PSScriptInfo
 
-      .VERSION 2.1
+      .VERSION 3.0
 
-      .GUID ac39aa3a-ea05-433f-af82-21925b2af50b
+      .GUID abfd36ca-c464-44d6-a92d-4a01c2078c74
 
       .AUTHOR Erik
 
@@ -63,7 +63,7 @@ function Test-FiberSatellite
 
       .LICENSEURI
 
-      .PROJECTURI  https://github.com/KnarrStudio/ITPS-Tools/wiki
+      .PROJECTURI  https://github.com/KnarrStudio/ITPS.OMCS.Tools/wiki/Test-FiberSatellite
 
       .ICONURI
 
@@ -91,7 +91,7 @@ function Test-FiberSatellite
     [Switch]$Log,
     [Parameter (ParameterSetName = 'Log')]
     [String]$ReportFile = "$env:SystemDrive\temp\Reports\FiberSatellite\FiberSatellite.log",
-    [Parameter(Mandatory,HelpMessage='CSV file that is used for trending')]
+    [Parameter(Mandatory,HelpMessage = 'CSV file that is used for trending',Position = 1,ParameterSetName = 'Log')]
     [String]$ReportCsv
     
   )
@@ -109,13 +109,11 @@ function Test-FiberSatellite
   $RttTotal = $NotRight = 0
   $TotalResponses = $TotalSites = $Sites.Count
   
-  $PingReportInput = Import-Csv -Path $ReportCsv
-  $ColumnNames = ($PingReportInput[0].psobject.Properties).name
-  
+
   $OutputTable = @{
     Title  = "`nThe Ping-O-Matic Fiber Tester!"
     Green  = ' Round Trip Time is GOOD!'
-    Yellow = ' Although not always the case this could indicate that you are on the backup fiber.'
+    Yellow = ' The average is a little high.  An email will be generated to send to the Netowrk team to investigate.'
     Red    = ' Although not always the case this could indicate that you are on the Satellite.'
     Report = ''
   }
@@ -123,16 +121,21 @@ function Test-FiberSatellite
   $PingStat = [Ordered]@{
     'DateStamp' = $TimeStamp
   }
- 
-  # Add any new sites to the report file
-  foreach($site in $Sites)
+  if($Log)
   {
-    Write-Verbose -Message ('1. {0}' -f $site)
-    if(! $ColumnNames.contains($site))
+    $PingReportInput = Import-Csv -Path $ReportCsv
+    $ColumnNames = ($PingReportInput[0].psobject.Properties).name
+  
+    # Add any new sites to the report file
+    foreach($site in $Sites)
     {
-      Write-Verbose -Message ('2. {0}' -f $site)
-      $PingReportInput | Add-Member -MemberType NoteProperty -Name $site -Value $null -Force
-      $PingReportInput  | Export-Csv -Path $ReportFile -NoTypeInformation
+      Write-Verbose -Message ('1. {0}' -f $site)
+      if(! $ColumnNames.contains($site))
+      {
+        Write-Verbose -Message ('2. {0}' -f $site)
+        $PingReportInput | Add-Member -MemberType NoteProperty -Name $site -Value $null -Force
+        $PingReportInput  | Export-Csv -Path $ReportFile -NoTypeInformation
+      }
     }
   }
 
@@ -220,15 +223,16 @@ function Test-FiberSatellite
 $DailySplat = @{
   'Log'     = $true
   'ReportCsv' = 'c:\temp\Reports\Ping.csv'
-  'Sites'   = ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com')
-  'Verbose' = $true
+  'Sites'   = ('localhost', 'www.google.com', 'www.bing.com', 'www.yahoo.com')
+  'Verbose' = $false
 }
 
-Test-FiberSatellite @DailySplat
+#Test-FiberSatellite @DailySplat
   
 
 # For Testing:
-#Test-FiberSatellite
+Test-FiberSatellite
+#Test-FiberSatellite -Simple
 #Test-FiberSatellite -Sites localhost,'yahoo.com'
 #Test-FiberSatellite -Sites localhost,'yahoo.com' -Simple 
 #Test-FiberSatellite -Sites localhost,'yahoo.com' -Simple -Verbose
