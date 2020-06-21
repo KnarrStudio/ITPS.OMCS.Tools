@@ -41,7 +41,12 @@ function Test-PrinterStatus
     
         [Parameter(Mandatory,HelpMessage = '\\NetworkShare\Reports\PrinterStatus\report.csv or c:\temp\report.csv',Position = 2)]
         [string]$PrinterStatusReport
-    #>    
+    #> 
+    ,
+    
+        [Parameter(Mandatory,HelpMessage = '\\NetworkShare\Reports\PrinterStatus\report.csv or c:\temp\report.csv',Position = 2)]
+        [string]$PrinterListFull
+       
   )
   
   #$PingReportFolder = $env:HOMEDRIVE\temp
@@ -64,7 +69,7 @@ function Test-PrinterStatus
       $PrinterStatus['PaperSize']          = ''
       $PrinterStatus['Collate']       = ''
       $PrinterStatus['Color']         = ''
-   #> 
+  #> 
   
   if(!(Test-Path -Path $PingReportFolder))
   {
@@ -75,12 +80,14 @@ function Test-PrinterStatus
   #$AllPrinters = Get-Printer -Name 'EPSON XP-440 Series' | Select-Object -Property *
   #$AllPrinters = Get-Printer | Select-Object -Property *
   
+  # Export AllPrinters to a CSV
+  $AllPrinters | Export-Csv $PrinterSiteList -NoTypeInformation
+  
   $CountTotalPrinters = $AllPrinters.count
   if($CountTotalPrinters -gt 0)
   {
     foreach($OnePrinter in $AllPrinters)
     {
-     
       $PrinterStatus['PrinterPort'] = $PortName = $OnePrinter.PortName
       $PrinterStatus['PrinterName'] = $PrinterName = $OnePrinter.Name
       Write-Progress -Activity ('Testing {0}' -f $PrinterName) -PercentComplete ($i / $CountTotalPrinters*100)
@@ -141,9 +148,8 @@ function Test-PrinterStatus
 
 
 $PrinterSplat = @{
-  'PrintServer' = $env:computername
+  'PrintServer'    = $env:COMPUTERNAME
   'PingReportFolder' = 'C:\temp'
-  
 }
 
 
