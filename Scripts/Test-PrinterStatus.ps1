@@ -41,12 +41,12 @@ function Test-PrinterStatus
     
         [Parameter(Mandatory,HelpMessage = '\\NetworkShare\Reports\PrinterStatus\report.csv or c:\temp\report.csv',Position = 2)]
         [string]$PrinterStatusReport
-    #> 
+    
     ,
     
         [Parameter(Mandatory,HelpMessage = '\\NetworkShare\Reports\PrinterStatus\report.csv or c:\temp\report.csv',Position = 2)]
         [string]$PrinterListFull
-       
+       #> 
   )
   
   #$PingReportFolder = $env:HOMEDRIVE\temp
@@ -90,6 +90,7 @@ function Test-PrinterStatus
     {
       $PrinterStatus['PrinterPort'] = $PortName = $OnePrinter.PortName
       $PrinterStatus['PrinterName'] = $PrinterName = $OnePrinter.Name
+      Write-Verbose ('Printer/Port Name: {0} / {1}' -f $PrinterName,$PortName)
       Write-Progress -Activity ('Testing {0}' -f $PrinterName) -PercentComplete ($i / $CountTotalPrinters*100)
       $i++
       
@@ -99,15 +100,16 @@ function Test-PrinterStatus
       $PrinterStatus['PaperSize']     = $PrintConfig.PaperSize
       $PrinterStatus['Collate']       = $PrintConfig.Collate
       $PrinterStatus['Color']         = $PrintConfig.Color
-      
+      Write-Verbose ('Printer Config Status: {0}' -f $PrinterStatus)
       # Get-PrinterProperty -PrinterName 'EPSON XP-440 Series'
       # $PrintConfig = Get-PrintConfiguration -PrinterName 'EPSON XP-440 Series'
       
       $PrinterStatus['PortIpAddress'] = $PortIpAddress = (Get-PrinterPort -ComputerName $PrintServer -Name $PortName).PrinterHostAddress 
-
+      Write-Verbose ('$Port Name / Port IP Address {0} / {1}' -f $PortName,$PortIpAddress)
       if ($PortIpAddress)
       {
         $PingPortResult = Test-NetConnection -ComputerName $PortIpAddress -InformationLevel Quiet
+        Write-Verbose ('Port Address Ping Response: {0}' -f $PingPortResult)
       }
         
       Switch ($PingPortResult) {
