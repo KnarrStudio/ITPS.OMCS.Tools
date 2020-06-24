@@ -1,4 +1,4 @@
-﻿#requires -Version 3.0 -Modules PrintManagement
+#requires -Version 3.0 -Modules PrintManagement
 function Test-PrinterStatus
 {
   <#
@@ -37,7 +37,7 @@ function Test-PrinterStatus
     [string]$PrintServer,
     
     [Parameter(HelpMessage = '\\NetworkShare\Reports\PrinterStatus\report.csv or c:\temp\report.csv',Position = 1)]
-    [string]$PingReportFolder = 'C:\temp'<#,
+    [string]$PingReportFolder = "\\NetworkShare\Reports\PrinterStatus"<#,
     
         [Parameter(Mandatory,HelpMessage = '\\NetworkShare\Reports\PrinterStatus\report.csv or c:\temp\report.csv',Position = 2)]
         [string]$PrinterStatusReport
@@ -57,6 +57,11 @@ function Test-PrinterStatus
   $PrinterStatusReport = (('{0}\{1}-PrinterReport.csv' -f $PingReportFolder, $DateStampFile))
   $PrinterSiteList = (('{0}\{1}-FullPrinterList.csv' -f $PingReportFolder, $DateStampFile))
   
+  # For testing that an IP address is in correct format.
+  $Octet = '(?:0?0?[0-9]|0?[1-9][0-9]|1[0-9]{2}|2[0-5][0-5]|2[0-4][0-9])'
+  [regex] $IPv4Regex = "^(?:$Octet\.){3}$Octet$"
+
+
   $PrinterStatus = [Ordered]@{
     'DateStamp' = $DateStampData
   }
@@ -100,16 +105,19 @@ function Test-PrinterStatus
       $PrinterStatus['PaperSize']     = $PrintConfig.PaperSize
       $PrinterStatus['Collate']       = $PrintConfig.Collate
       $PrinterStatus['Color']         = $PrintConfig.Color
-      Write-Verbose ('Printer Config Status: {0}' -f $PrinterStatus)
+      # Write-Verbose ('Printer Config Status: {0}' -f $PrinterStatus)
       # Get-PrinterProperty -PrinterName 'EPSON XP-440 Series'
       # $PrintConfig = Get-PrintConfiguration -PrinterName 'EPSON XP-440 Series'
       
       $PrinterStatus['PortIpAddress'] = $PortIpAddress = (Get-PrinterPort -ComputerName $PrintServer -Name $PortName).PrinterHostAddress 
-      Write-Verbose ('$Port Name / Port IP Address {0} / {1}' -f $PortName,$PortIpAddress)
-      if ($PortIpAddress)
+      Write-Verbose ('Port Name / Port IP Address {0} / {1}' -f $PortName,$PortIpAddress)
+      if ($PortIpAddress -match $IPv4Regex)
       {
         $PingPortResult = Test-NetConnection -ComputerName $PortIpAddress -InformationLevel Quiet
         Write-Verbose ('Port Address Ping Response: {0}' -f $PingPortResult)
+      }
+      else{
+        $PingPortResult = 'IncorrectFormat'
       }
         
       Switch ($PingPortResult) {
@@ -129,8 +137,7 @@ function Test-PrinterStatus
         }
       }
       $PrinterStatus['PingPortResult'] = $PingPortResult
-    }
-      
+
     If($PrinterStatusReport -ne $null)
     {
       # Export the hashtable to the file
@@ -140,6 +147,9 @@ function Test-PrinterStatus
       } |
       Export-Csv -Path $PrinterStatusReport -NoTypeInformation -Force -Append
     }
+    }
+      
+
   }
   
   Write-Verbose -Message ('Total Printers found: {0}' -f $CountTotalPrinters)
@@ -150,9 +160,10 @@ function Test-PrinterStatus
 
 
 $PrinterSplat = @{
-  'PrintServer'    = $env:COMPUTERNAME
-  'PingReportFolder' = 'C:\temp'
+  'PrintServer'    = 'PrinterServerName'
+  'PingReportFolder' = "\\FileServerName\Share\Reports"
 }
 
 
 Test-PrinterStatus @PrinterSplat -Verbose
+
