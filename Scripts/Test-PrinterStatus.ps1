@@ -1,4 +1,11 @@
 #requires -Version 3.0 -Modules PrintManagement
+
+$PrinterSplat = @{
+  'PrintServer'    = 'PrinterServerName'
+  'PingReportFolder' = '\\FileServerName\Share\Reports'
+  'Verbose'        = $true
+}
+
 function Test-PrinterStatus
 {
   <#
@@ -7,7 +14,6 @@ function Test-PrinterStatus
 
       .DESCRIPTION
       What started as a oneline script to find out which printers are erroring out has turned into this module.  It creates two files, one that has a list of all of the printers and one that has a list of the printers that are not in a "Normal" status.  It also finds the port IP Address and attempts to "ping" it.  It returns those results to the screen.
-
 
       .PARAMETER PrintServer
       Assigns the print server name to the variable.
@@ -37,7 +43,7 @@ function Test-PrinterStatus
     [string]$PrintServer,
     
     [Parameter(HelpMessage = '\\NetworkShare\Reports\PrinterStatus\report.csv or c:\temp\report.csv',Position = 1)]
-    [string]$PingReportFolder = "\\NetworkShare\Reports\PrinterStatus"<#,
+    [string]$PingReportFolder = '\\NetworkShare\Reports\PrinterStatus'<#,
     
         [Parameter(Mandatory,HelpMessage = '\\NetworkShare\Reports\PrinterStatus\report.csv or c:\temp\report.csv',Position = 2)]
         [string]$PrinterStatusReport
@@ -61,9 +67,8 @@ function Test-PrinterStatus
   $Octet = '(?:0?0?[0-9]|0?[1-9][0-9]|1[0-9]{2}|2[0-5][0-5]|2[0-4][0-9])'
   [regex] $IPv4Regex = "^(?:$Octet\.){3}$Octet$"
 
-
   $PrinterStatus = [Ordered]@{
-    'DateStamp' = $DateStampData
+  'DateStamp' = $DateStampData
   }
   
   <#
@@ -78,8 +83,8 @@ function Test-PrinterStatus
   
   if(!(Test-Path -Path $PingReportFolder))
   {
-    New-Item -Path $PingReportFolder -ItemType Directory
-  }
+New-Item -Path $PingReportFolder -ItemType Directory
+}
   
   $AllPrinters = Get-Printer -ComputerName $PrintServer | Select-Object -Property *
   #$AllPrinters = Get-Printer -Name 'EPSON XP-440 Series' | Select-Object -Property *
@@ -95,7 +100,7 @@ function Test-PrinterStatus
     {
       $PrinterStatus['PrinterPort'] = $PortName = $OnePrinter.PortName
       $PrinterStatus['PrinterName'] = $PrinterName = $OnePrinter.Name
-      Write-Verbose ('Printer/Port Name: {0} / {1}' -f $PrinterName,$PortName)
+      Write-Verbose -Message ('Printer/Port Name: {0} / {1}' -f $PrinterName, $PortName)
       Write-Progress -Activity ('Testing {0}' -f $PrinterName) -PercentComplete ($i / $CountTotalPrinters*100)
       $i++
       
@@ -110,15 +115,16 @@ function Test-PrinterStatus
       # $PrintConfig = Get-PrintConfiguration -PrinterName 'EPSON XP-440 Series'
       
       $PrinterStatus['PortIpAddress'] = $PortIpAddress = (Get-PrinterPort -ComputerName $PrintServer -Name $PortName).PrinterHostAddress 
-      Write-Verbose ('Port Name / Port IP Address {0} / {1}' -f $PortName,$PortIpAddress)
+      Write-Verbose -Message ('Port Name / Port IP Address {0} / {1}' -f $PortName, $PortIpAddress)
       if ($PortIpAddress -match $IPv4Regex)
       {
         $PingPortResult = Test-NetConnection -ComputerName $PortIpAddress -InformationLevel Quiet
-        Write-Verbose ('Port Address Ping Response: {0}' -f $PingPortResult)
+        Write-Verbose -Message ('Port Address Ping Response: {0}' -f $PingPortResult)
       }
-      else{
-        $PingPortResult = 'IncorrectFormat'
-      }
+      else
+{
+$PingPortResult = 'IncorrectFormat'
+}
         
       Switch ($PingPortResult) {
         $False 
@@ -127,14 +133,14 @@ function Test-PrinterStatus
           $BadCount ++
           $PrinterProperties = $OnePrinter
         }
-        $True 
+        $true 
         {
-          Write-Host -Object ('The printer {0} responded to a ping!  ' -f $PrinterName) -ForegroundColor Green
-        }
+Write-Host -Object ('The printer {0} responded to a ping!  ' -f $PrinterName) -ForegroundColor Green
+}
         Default 
         {
-          $PingPortResult = 'N/A'
-        }
+$PingPortResult = 'N/A'
+}
       }
       $PrinterStatus['PingPortResult'] = $PingPortResult
 
@@ -143,14 +149,12 @@ function Test-PrinterStatus
       # Export the hashtable to the file
       $PrinterStatus |
       ForEach-Object -Process {
-        [pscustomobject]$_
-      } |
+[pscustomobject]$_
+} |
       Export-Csv -Path $PrinterStatusReport -NoTypeInformation -Force -Append
     }
     }
-      
-
-  }
+}
   
   Write-Verbose -Message ('Total Printers found: {0}' -f $CountTotalPrinters)
   Write-Verbose -Message ('Total Printers not responding to a PING: {0}' -f $BadCount)
@@ -158,12 +162,5 @@ function Test-PrinterStatus
   Write-Verbose -Message ('You can find the full report at: {0}' -f $PrinterStatusReport)
 }
 
-
-$PrinterSplat = @{
-  'PrintServer'    = 'PrinterServerName'
-  'PingReportFolder' = "\\FileServerName\Share\Reports"
-}
-
-
-Test-PrinterStatus @PrinterSplat -Verbose
+Test-PrinterStatus @PrinterSplat
 
