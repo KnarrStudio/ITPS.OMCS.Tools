@@ -49,9 +49,9 @@ function Test-FiberSatellite
 
   <#PSScriptInfo
 
-      .VERSION 2.1
+      .VERSION 3.0
 
-      .GUID ac39aa3a-ea05-433f-af82-21925b2af50b
+      .GUID abfd36ca-c464-44d6-a92d-4a01c2078c74
 
       .AUTHOR Erik
 
@@ -63,7 +63,7 @@ function Test-FiberSatellite
 
       .LICENSEURI
 
-      .PROJECTURI  https://github.com/KnarrStudio/ITPS-Tools/wiki
+      .PROJECTURI  https://github.com/KnarrStudio/ITPS.OMCS.Tools/wiki/Test-FiberSatellite
 
       .ICONURI
 
@@ -84,40 +84,74 @@ function Test-FiberSatellite
   param
   (
     [Parameter(Position = 0)]
-    [Object[]] $Sites = ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com'),
+    [String[]] $Sites = ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com'),
     [Parameter (ParameterSetName = 'Default')]
     [Switch]$Simple,
     [Parameter (ParameterSetName = 'Log')]
     [Switch]$Log,
     [Parameter (ParameterSetName = 'Log')]
-    [String]$ReportFolder = "$env:temp\Reports\FiberSatellite"
+    [String]$ReportFile = "$env:SystemDrive\temp\Reports\FiberSatellite\FiberSatellite.log",
+    [Parameter(Mandatory,HelpMessage = 'CSV file that is used for trending',Position = 1,ParameterSetName = 'Log')]
+    [String]$ReportCsv
+    
   )
   
+  If(-not (Test-Path -Path $ReportFile))
+  {
+    $null = New-Item -Path $ReportFile -ItemType File -Force
+  }
+      
+  
+  $TimeStamp = Get-Date -Format G 
   $ReportList = [Collections.ArrayList]@()
+  $null = @()
+  
   $RttTotal = $NotRight = 0
   $TotalResponses = $TotalSites = $Sites.Count
-  $ReportFile = (('{0}\FiberSatellite.log' -f $ReportFolder))
   
+
   $OutputTable = @{
     Title  = "`nThe Ping-O-Matic Fiber Tester!"
     Green  = ' Round Trip Time is GOOD!'
-    Yellow = ' Although not always the case this could indicate that you are on the backup fiber.'
+    Yellow = ' The average is a little high.  An email will be generated to send to the Netowrk team to investigate.'
     Red    = ' Although not always the case this could indicate that you are on the Satellite.'
     Report = ''
   }
-
-  ForEach ($Site in $Sites)  
+  
+  $PingStat = [Ordered]@{
+    'DateStamp' = $TimeStamp
+  }
+  if($Log)
   {
-    $PingReply = Test-NetConnection -ComputerName $Site 
+    $PingReportInput = Import-Csv -Path $ReportCsv
+    $ColumnNames = ($PingReportInput[0].psobject.Properties).name
+  
+    # Add any new sites to the report file
+    foreach($site in $Sites)
+    {
+      Write-Verbose -Message ('1. {0}' -f $site)
+      if(! $ColumnNames.contains($site))
+      {
+        Write-Verbose -Message ('2. {0}' -f $site)
+        $PingReportInput | Add-Member -MemberType NoteProperty -Name $site -Value $null -Force
+        $PingReportInput  | Export-Csv -Path $ReportFile -NoTypeInformation
+      }
+    }
+  }
+
+  ForEach ($site in $Sites)  
+  {
+    $PingReply = Test-NetConnection -ComputerName $site 
     if($PingReply.PingSucceeded -eq $true)
     {
       $RTT = $PingReply.PingReplyDetails.RoundtripTime
-      $RttTotal = $RttTotal + $RTT
-    
+      $RttTotal += $RTT
+
+      
       if($RTT -eq 0)
       {
         $TotalResponses = $TotalResponses - 1
-        $NotRight = $NotRight + 1
+        $NotRight ++
       }
       
       $OutputMessage = ('{0} - RoundTripTime is {1} ms.' -f $PingReply.Computername, $RTT)
@@ -128,10 +162,12 @@ function Test-FiberSatellite
     {
       $TotalResponses = $TotalResponses - 1
     }
+    
+    $PingStat[$site] = [string]$RTT
   }
 
   $RTT = $RttTotal/$TotalResponses
-  $TimeStamp = Get-Date -Format G 
+  #$TimeStamp = Get-Date -Format G 
 
   $OutputTable.Report = ('{1} - {3} tested {0} remote sites and {2} responded. The average response time: {4}ms' -f $TotalSites, $TimeStamp, $TotalResponses, $env:USERNAME, [int]$RTT) 
  
@@ -168,22 +204,35 @@ function Test-FiberSatellite
   }
   If($Log)
   {
-    If(-not (Test-Path -Path $ReportFolder))
-    {
-      New-Item -Path $ReportFolder -ItemType Directory
-    }
     $OutputTable.Report | Out-File -FilePath $ReportFile -Append
     $ReportList | Out-File -FilePath $ReportFile -Append
     ('-' * 30) | Out-File -FilePath $ReportFile -Append
     Write-Output -InputObject ('You can find the full report at: {0}' -f $ReportFile)
     Start-Process -FilePath notepad -ArgumentList $ReportFile
+    
+    # Export the hashtable to the file
+    $PingStat |
+    ForEach-Object -Process {
+      [pscustomobject]$_
+    } |     
+    Export-Csv -Path $ReportCsv -NoTypeInformation -Force -Append
   }
 }
 
 
+$DailySplat = @{
+  'Log'     = $true
+  'ReportCsv' = 'c:\temp\Reports\Ping.csv'
+  'Sites'   = ('localhost', 'www.google.com', 'www.bing.com', 'www.yahoo.com')
+  'Verbose' = $false
+}
+
+#Test-FiberSatellite @DailySplat
+  
 
 # For Testing:
-#Test-FiberSatellite
+Test-FiberSatellite
+#Test-FiberSatellite -Simple
 #Test-FiberSatellite -Sites localhost,'yahoo.com'
 #Test-FiberSatellite -Sites localhost,'yahoo.com' -Simple 
 #Test-FiberSatellite -Sites localhost,'yahoo.com' -Simple -Verbose
@@ -193,27 +242,3 @@ function Test-FiberSatellite
 
 
 
-# SIG # Begin signature block
-# MIID/AYJKoZIhvcNAQcCoIID7TCCA+kCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
-# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUosLCnPROISOz3fSiIutFLdqu
-# DKagggIRMIICDTCCAXagAwIBAgIQapk6cNSgeKlJl3aFtKq3jDANBgkqhkiG9w0B
-# AQUFADAhMR8wHQYDVQQDDBZLbmFyclN0dWRpb1NpZ25pbmdDZXJ0MB4XDTIwMDIx
-# OTIyMTUwM1oXDTI0MDIxOTAwMDAwMFowITEfMB0GA1UEAwwWS25hcnJTdHVkaW9T
-# aWduaW5nQ2VydDCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAxtuEswl88jvC
-# o69/eD6Rtr5pZikUTNGtI2LqT1a3CZ8F6BCC1tp0+ftZLppxueX/BKVBPTTSg/7t
-# f5nkGMFIvbabMiYtfWTPr6L32B4SIZayruDkVETRH74RzG3i2xHNMThZykUWsekN
-# jAer+/a2o7F7G6A/GlH8kan4MGjo1K0CAwEAAaNGMEQwEwYDVR0lBAwwCgYIKwYB
-# BQUHAwMwHQYDVR0OBBYEFGp363bIyuwL4FI0q36S/8cl5MOBMA4GA1UdDwEB/wQE
-# AwIHgDANBgkqhkiG9w0BAQUFAAOBgQBkVkTuk0ySiG3DYg0dKBQaUqI8aKssFv8T
-# WNo23yXKUASrgjVl1iAt402AQDHE3aR4OKv/7KIIHYaiFTX5yQdMFoCyhXGop3a5
-# bmipv/NjwGWsYrCq9rX2uTuNpUmvQ+0hM3hRzgZ+M2gmjCT/Pgvia/LJiHuF2SlA
-# 7wXAuVRh8jGCAVUwggFRAgEBMDUwITEfMB0GA1UEAwwWS25hcnJTdHVkaW9TaWdu
-# aW5nQ2VydAIQapk6cNSgeKlJl3aFtKq3jDAJBgUrDgMCGgUAoHgwGAYKKwYBBAGC
-# NwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgor
-# BgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUTmsVK4rd
-# 367SGscB8bGcAXvWpX0wDQYJKoZIhvcNAQEBBQAEgYAkGcyKEXcfDg5RPpystg7Y
-# d6G7Gx+DRAt30QnNQAtKfu8RNFeuUlhaSGwQjHvs/ykslBGNhBqhFT0vTH5eFBT9
-# 3QF9WzcFR4B5w2G/XZSo9vKyrmfhxjpubnLBS7g8Aa2xF9PxCAAkUZ9+8iGDM3VL
-# GSgC01zigZ+K4g8U7zjIIw==
-# SIG # End signature block

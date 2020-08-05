@@ -1,11 +1,11 @@
-﻿function New-TimeStampFileName 
+﻿function New-TimeStampFile 
 {
   <#
       .SYNOPSIS
-      Creates a filename where a time stamp in the name is needed
+      Creates a file or filename with a time stamp in the name
 
       .DESCRIPTION
-      Allows you to create a filename with a time stamp.  You provide the base name, extension, date format and it should do the rest. It should be setup to be a plug-n-play function that can be used in or out of another script.
+      Allows you to create a  file or filename with a time stamp.  You provide the base name, extension, date format and it should do the rest. It should be setup to be a plug-n-play function that can be used in or out of another script.
     
       .PARAMETER baseNAME
       This is the primary name of the file.  It will be followed by the date/time stamp.
@@ -13,22 +13,29 @@
       .PARAMETER FileType
       The extension. ig. csv, txt, log
 
+     .PARAMETER ReportFolder
+      To acutally create the file add -ReportFolder.
+
+    .EXAMPLE
+    New-TimeStampFile -baseNAME Value -FileType Value -StampFormat Value -ReportFolder Value
+    Actually creates the file in the folder specified in the -ReportFolder parameter
+
       .PARAMETER StampFormat
-      Describe parameter -StampFormat.
+      StampFormat is an integer from 1-4 which selects the date foramat.  For more information "Get-Help New-TimeStampFile -full" .
 
       .EXAMPLE
       New-TimeStampFileName -baseNAME TestFile -FileType log -StampFormat 1
       This creates a file TestFile-1910260715.log
 
-.EXAMPLE
+      .EXAMPLE
       New-TimedStampFileName -baseNAME TestFile -FileType log -StampFormat 2
       This creates a file TestFile-20191026.log
 
-.EXAMPLE
+      .EXAMPLE
       New-TimedStampFileName -baseNAME TestFile -FileType log -StampFormat 3
       This creates a file TestFile-299071531.log
 
-     .EXAMPLE
+      .EXAMPLE
       New-TimedStampFileName -baseNAME TestFile -FileType log -StampFormat 4
       This creates a file TestFile-2019-10-26T07.16.33.3394199-04.00.log
 
@@ -55,12 +62,15 @@
   (
     [Parameter(Mandatory,HelpMessage = 'Prefix of file or log name')]
     [String]$baseNAME,
-    [Parameter(Mandatory,HelpMessage = 'Extention of file.  txt, csv, log')]
+    [Parameter(Mandatory=$false,HelpMessage = 'Extention of file.  txt, csv, log')]
     [alias('Extension')]
-    [String]$FileType,
+    [String]$FileType= 'log',
     [Parameter(Mandatory,HelpMessage = 'Formatting Choice 1 to 4')]
     [ValidateRange(1,4)]
-    [int]$StampFormat
+    [int]$StampFormat,
+    [Parameter(ValueFromPipeline,HelpMessage = 'Folder Path')]
+    [AllowNull()]
+    [String]$ReportFolder
   )
 
   switch ($StampFormat){
@@ -88,32 +98,22 @@
     }
   }
 
-  ('{0}-{1}-{2}' -f $baseNAME,$DateStamp,$FileType)
+  $FileName = ('{0}-{1}.{2}' -f $baseNAME,$DateStamp,$FileType)
+  
+
+    If ($ReportFolder){
+      If(-not (Test-Path -Path $ReportFolder))
+      {
+        $null = New-Item -Path $ReportFolder -ItemType Directory -Force
+        }
+        $null = New-Item -Path ('{0}\{1}' -f $ReportFolder, $FileName) -ItemType File -Force
+    Return ('{0}\{1}' -f $ReportFolder, $FileName)
+      }
+    else
+    {
+      Return $FileName
+    }
 }
 
 
 
-# SIG # Begin signature block
-# MIID/AYJKoZIhvcNAQcCoIID7TCCA+kCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
-# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU8FTCgOcHfceeknEDQeVTfqgb
-# i7+gggIRMIICDTCCAXagAwIBAgIQapk6cNSgeKlJl3aFtKq3jDANBgkqhkiG9w0B
-# AQUFADAhMR8wHQYDVQQDDBZLbmFyclN0dWRpb1NpZ25pbmdDZXJ0MB4XDTIwMDIx
-# OTIyMTUwM1oXDTI0MDIxOTAwMDAwMFowITEfMB0GA1UEAwwWS25hcnJTdHVkaW9T
-# aWduaW5nQ2VydDCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAxtuEswl88jvC
-# o69/eD6Rtr5pZikUTNGtI2LqT1a3CZ8F6BCC1tp0+ftZLppxueX/BKVBPTTSg/7t
-# f5nkGMFIvbabMiYtfWTPr6L32B4SIZayruDkVETRH74RzG3i2xHNMThZykUWsekN
-# jAer+/a2o7F7G6A/GlH8kan4MGjo1K0CAwEAAaNGMEQwEwYDVR0lBAwwCgYIKwYB
-# BQUHAwMwHQYDVR0OBBYEFGp363bIyuwL4FI0q36S/8cl5MOBMA4GA1UdDwEB/wQE
-# AwIHgDANBgkqhkiG9w0BAQUFAAOBgQBkVkTuk0ySiG3DYg0dKBQaUqI8aKssFv8T
-# WNo23yXKUASrgjVl1iAt402AQDHE3aR4OKv/7KIIHYaiFTX5yQdMFoCyhXGop3a5
-# bmipv/NjwGWsYrCq9rX2uTuNpUmvQ+0hM3hRzgZ+M2gmjCT/Pgvia/LJiHuF2SlA
-# 7wXAuVRh8jGCAVUwggFRAgEBMDUwITEfMB0GA1UEAwwWS25hcnJTdHVkaW9TaWdu
-# aW5nQ2VydAIQapk6cNSgeKlJl3aFtKq3jDAJBgUrDgMCGgUAoHgwGAYKKwYBBAGC
-# NwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgor
-# BgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUNa5E7StW
-# GamlJ9MklynW9C5PJdkwDQYJKoZIhvcNAQEBBQAEgYBywCRCdTJAIw8XkWxiJ3fu
-# 8+4mMTmgdH4szpBXBPTyZPEJYMGNVtGa9pDUy+HImRU0xy9Eu7G/ktFRekt2jkO8
-# 8kaVaSNa2Lg54TNxq4Zoa7UOuJ2JMalRxYocjtBCtkSQYXq6eyI72RNjWY9xV9cs
-# LgUmIIz7O7t5kJOZwQXadw==
-# SIG # End signature block
