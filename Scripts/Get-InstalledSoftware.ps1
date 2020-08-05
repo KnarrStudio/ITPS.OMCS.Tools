@@ -1,4 +1,5 @@
-﻿Function Get-InstalledSoftware
+﻿#requires -Version 3.0
+Function Get-InstalledSoftware
 {
   <#
       .SYNOPSIS
@@ -47,15 +48,15 @@
 
   #>
 
-    [cmdletbinding(DefaultParameterSetName = 'SortList',SupportsPaging = $true)]
+  [cmdletbinding(DefaultParameterSetName = 'SortList',SupportsPaging = $true)]
   Param(
     
     [Parameter(Mandatory = $true,HelpMessage = 'At least part of the software name to test', Position = 0,ParameterSetName = 'SoftwareName')]
     [String[]]$SoftwareName,
     [Parameter(ParameterSetName = 'SortList')]
     [Parameter(ParameterSetName = 'SoftwareName')]
-    [ValidateSet('InstallDate', 'DisplayName','DisplayVersion')] 
-    [String]$SortList = 'InstallDate'
+    [ValidateSet('DateInstalled', 'DisplayName','DisplayVersion')] 
+    [String]$SortList = 'DateInstalled'
     
   )
   
@@ -72,9 +73,9 @@
         $SoftwareOutput = $InstalledSoftware |
         #Sort-Object -Descending -Property $SortList |
         Select-Object -Property @{
-          Name = 'Date Installed'
+          Name = 'DateInstalled'
           Exp  = {
-            $_.Installdate
+            $_.InstallDate
           }
         }, @{
           Name = 'Version'
@@ -88,13 +89,18 @@
         foreach($Item in $SoftwareName)
         {
           $SoftwareOutput += $InstalledSoftware |
-          Where-Object -Property DisplayName -Match -Value $Item |
+          Where-Object -Property DisplayName -Match -Value $SoftwareName|
           Select-Object -Property @{
+            Name = 'DateInstalled'
+            Exp  = {
+              $_.InstallDate
+            }
+          }, @{
             Name = 'Version'
             Exp  = {
               $_.DisplayVersion
             }
-          }, DisplayName # , UninstallString 
+          }, DisplayName #, UninstallString 
         }
       }
     }
@@ -123,7 +129,7 @@
       'DisplayName' 
       {
         $SoftwareOutput |
-        Sort-Object -Property displayname
+        Sort-Object -Property 'displayname'
       }
       'DisplayVersion' 
       {
@@ -134,10 +140,15 @@
       {
 
       }
+      'DateInstalled'  
+      {
+        $SoftwareOutput |
+        Sort-Object -Property 'DateInstalled' 
+      } 
       default  
       {
         $SoftwareOutput |
-        Sort-Object -Property 'Date Installed'
+        Sort-Object -Property 'DateInstalled'
       } #'InstallDate'
       
     }
@@ -150,11 +161,14 @@
 # Get-InstalledSoftware
  
 
+
+
+
 # SIG # Begin signature block
 # MIID/AYJKoZIhvcNAQcCoIID7TCCA+kCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/0DlqtO3Ha4bduESR+vsY9oZ
-# j1KgggIRMIICDTCCAXagAwIBAgIQapk6cNSgeKlJl3aFtKq3jDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU68eLK70VkQcSXSRjnLoNkl2j
+# pjugggIRMIICDTCCAXagAwIBAgIQapk6cNSgeKlJl3aFtKq3jDANBgkqhkiG9w0B
 # AQUFADAhMR8wHQYDVQQDDBZLbmFyclN0dWRpb1NpZ25pbmdDZXJ0MB4XDTIwMDIx
 # OTIyMTUwM1oXDTI0MDIxOTAwMDAwMFowITEfMB0GA1UEAwwWS25hcnJTdHVkaW9T
 # aWduaW5nQ2VydDCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAxtuEswl88jvC
@@ -168,9 +182,9 @@
 # 7wXAuVRh8jGCAVUwggFRAgEBMDUwITEfMB0GA1UEAwwWS25hcnJTdHVkaW9TaWdu
 # aW5nQ2VydAIQapk6cNSgeKlJl3aFtKq3jDAJBgUrDgMCGgUAoHgwGAYKKwYBBAGC
 # NwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgor
-# BgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU6CvzDSrj
-# WPtyFWgZpedLiQbUHcYwDQYJKoZIhvcNAQEBBQAEgYAyHKKgFJIhsikAZRWRkHZi
-# KzZUJTVtaYgwZvyvN9zK0W1d3wKYwa9snk1OWIIcDbQSWcmR01untw0tt4ekZqVk
-# aV//3xPiucQwRN3GM2kRVLY5bLZ87Qq58FGJXyOrsIptMOaBlG4n2lAmpW+y4utK
-# 6ycN1BDCwGe333Pb1HOg0Q==
+# BgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUmFlzjq9m
+# 5xREyOHXRWWpgaPVEGMwDQYJKoZIhvcNAQEBBQAEgYCD5c4lTnEyIh/FRxomeeft
+# zA1nxtM1LDOgp8KfK8+3BMg9KHUBoseA/bgZlUooB4/ZGFeYve7vHyv0hEdwfqnX
+# BDmc4DnkpBAVm0zWhfhOdv4qGd/A/g/0JHt5y8o7FQ2z9UhmWwA2BqU8CeigRpo2
+# J7WE0Be13hKGbiYC7KL/0Q==
 # SIG # End signature block
