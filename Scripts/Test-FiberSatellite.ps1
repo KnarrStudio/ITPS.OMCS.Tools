@@ -109,6 +109,9 @@ function Test-FiberSatellite
   $RttTotal = $NotRight = 0
   $TotalResponses = $TotalSites = $Sites.Count
   
+  function Get-CurrentLineNumber {
+    $MyInvocation.ScriptLineNumber
+} 
 
   $OutputTable = @{
     Title  = "`nThe Ping-O-Matic Fiber Tester!"
@@ -117,12 +120,18 @@ function Test-FiberSatellite
     Red    = ' Although not always the case this could indicate that you are on the Satellite.'
     Report = ''
   }
-  
+  $VerboseMsg = @{
+  1 = "Log Switch set"
+
+  }
+
   $PingStat = [Ordered]@{
     'DateStamp' = $TimeStamp
   }
+  
   if($Log)
   {
+    Write-Verbose -Message "$VerboseMsg.1 at line $(Get-CurrentLineNumber)"
     $PingReportInput = Import-Csv -Path $ReportCsv
     $ColumnNames = ($PingReportInput[0].psobject.Properties).name
   
@@ -141,35 +150,46 @@ function Test-FiberSatellite
 
   ForEach ($site in $Sites)  
   {
+    Write-Verbose  -Message $OutputMessage
+        
     $PingReply = Test-NetConnection -ComputerName $site 
-    if($PingReply.PingSucceeded -eq $true)
-    {
-      $RTT = $PingReply.PingReplyDetails.RoundtripTime
-      $RttTotal += $RTT
+    
+    $RoundTripTime = $PingReply.PingReplyDetails.RoundtripTime
+    $PingSucceded = $PingReply.PingSucceeded
+    
+      if(($PingSucceded -eq $true) -and ($RoundTripTime -eq 0))
+      {
+        $PingReply = Test-NetConnection -ComputerName $site 
+        $RoundTripTime = $PingReply.PingReplyDetails.RoundtripTime
+        $RemoteAddress = $PingReply.RemoteAddress
+        $PingSucceded = $PingReply.PingSucceeded
+      }
 
+      $RttTotal += $RoundTripTime
+
+
+      if($PingSucceded -eq $false)
+        {
+          $TotalResponses = $TotalResponses - 1
+          $NotRight ++
+        }
       
-      if($RTT -eq 0)
+        $OutputMessage = ('{0} - RoundTripTime is {1} ms.' -f $PingReply.Computername, $RoundTripTime)
+        Write-Verbose  -Message $OutputMessage
+        $ReportList += $OutputMessage
+      }
+      Else
       {
         $TotalResponses = $TotalResponses - 1
-        $NotRight ++
       }
-      
-      $OutputMessage = ('{0} - RoundTripTime is {1} ms.' -f $PingReply.Computername, $RTT)
-      Write-Verbose  -Message $OutputMessage
-      $ReportList += $OutputMessage
-    }
-    Else
-    {
-      $TotalResponses = $TotalResponses - 1
-    }
     
-    $PingStat[$site] = [string]$RTT
+    $PingStat[$site] = [string]$RoundTripTime
   }
 
-  $RTT = $RttTotal/$TotalResponses
+  $RoundTripTime = $RttTotal/$TotalResponses
   #$TimeStamp = Get-Date -Format G 
 
-  $OutputTable.Report = ('{1} - {3} tested {0} remote sites and {2} responded. The average response time: {4}ms' -f $TotalSites, $TimeStamp, $TotalResponses, $env:USERNAME, [int]$RTT) 
+  $OutputTable.Report = ('{1} - {3} tested {0} remote sites and {2} responded. The average response time: {4}ms' -f $TotalSites, $TimeStamp, $TotalResponses, $env:USERNAME, [int]$RoundTripTime) 
  
   Write-Verbose -Message $OutputTable.Report
   #$OutputTable.Report | Out-File $ReportFile
@@ -182,17 +202,17 @@ function Test-FiberSatellite
   if((-not $Simple) -and (-not $Log))
   {
     Write-Output -InputObject $OutputTable.Title 
-    if($RTT -gt 380)
+    if($RoundTripTime -gt 380)
     {
       Write-Host -Object ('  ') -BackgroundColor Red -ForegroundColor White -NoNewline
       Write-Output -InputObject ($OutputTable.Red)
     }
-    ElseIf($RTT -gt 90)
+    ElseIf($RoundTripTime -gt 90)
     {
       Write-Host -Object ('  ') -BackgroundColor Yellow -ForegroundColor White -NoNewline
       Write-Output -InputObject ($OutputTable.Yellow)
     }
-    ElseIf($RTT -gt 1)
+    ElseIf($RoundTripTime -gt 1)
     {
       Write-Host -Object ('  ') -BackgroundColor Green -ForegroundColor White -NoNewline
       Write-Output -InputObject ($OutputTable.Green) 
@@ -217,21 +237,21 @@ function Test-FiberSatellite
     } |     
     Export-Csv -Path $ReportCsv -NoTypeInformation -Force -Append
   }
-}
+
 
 
 $DailySplat = @{
   'Log'     = $true
   'ReportCsv' = 'c:\temp\Reports\Ping.csv'
   'Sites'   = ('localhost', 'www.google.com', 'www.bing.com', 'www.yahoo.com')
-  'Verbose' = $false
+  'Verbose' = $true
 }
 
 #Test-FiberSatellite @DailySplat
   
 
 # For Testing:
-Test-FiberSatellite
+Test-FiberSatellite @dailysplat
 #Test-FiberSatellite -Simple
 #Test-FiberSatellite -Sites localhost,'yahoo.com'
 #Test-FiberSatellite -Sites localhost,'yahoo.com' -Simple 
