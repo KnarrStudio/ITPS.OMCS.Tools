@@ -79,7 +79,7 @@ function Test-FiberSatellite
       .PRIVATEDATA
 
   #>
-
+   
   [cmdletbinding(DefaultParameterSetName = 'Default')]
   param
   (
@@ -93,26 +93,22 @@ function Test-FiberSatellite
     [String]$ReportFile = "$env:SystemDrive\temp\Reports\FiberSatellite\FiberSatellite.log",
     [Parameter(Mandatory,HelpMessage = 'CSV file that is used for trending',Position = 1,ParameterSetName = 'Log')]
     [String]$ReportCsv
-    
+
   )
-  
-  If(-not (Test-Path -Path $ReportFile))
+     
+  #region Initial Setup
+  function Get-CurrentLineNumber 
   {
-    $null = New-Item -Path $ReportFile -ItemType File -Force
-  }
-      
-  
+    $MyInvocation.ScriptLineNumber
+  } 
+
+  # Set Variables   
   $TimeStamp = Get-Date -Format G 
   $ReportList = [Collections.ArrayList]@()
   $null = @()
-  
   $RttTotal = $NotRight = 0
   $TotalResponses = $TotalSites = $Sites.Count
-  
-  function Get-CurrentLineNumber {
-    $MyInvocation.ScriptLineNumber
-} 
-
+ 
   $OutputTable = @{
     Title  = "`nThe Ping-O-Matic Fiber Tester!"
     Green  = ' Round Trip Time is GOOD!'
@@ -120,73 +116,90 @@ function Test-FiberSatellite
     Red    = ' Although not always the case this could indicate that you are on the Satellite.'
     Report = ''
   }
-  $VerboseMsg = @{
-  1 = "Log Switch set"
 
+  $VerboseMsg = @{
+    1 = 'Place Holder Message'
+    2 = 'Log Switch set'
+    3 = 'Test'
   }
 
   $PingStat = [Ordered]@{
     'DateStamp' = $TimeStamp
   }
   
-  if($Log)
+  # Setup Files
+  If(-not (Test-Path -Path $ReportFile))
   {
-    Write-Verbose -Message "$VerboseMsg.1 at line $(Get-CurrentLineNumber)"
+    $null = New-Item -Path $ReportFile -ItemType File -Force
+  }
+  #region 'Setup outut CSV File'
+
+  if($ReportCsv) 
+  {
+    # Trending CSV file setup and site addition
+    Write-Verbose -Message ('Line {0}:  {1}' -f $(Get-CurrentLineNumber), $VerboseMsg.2)
     $PingReportInput = Import-Csv -Path $ReportCsv
     $ColumnNames = ($PingReportInput[0].psobject.Properties).name
-  
+
     # Add any new sites to the report file
     foreach($site in $Sites)
     {
-      Write-Verbose -Message ('1. {0}' -f $site)
+      Write-Verbose -Message ('Line {0}:  {1}' -f $(Get-CurrentLineNumber), $VerboseMsg.1)
       if(! $ColumnNames.contains($site))
       {
-        Write-Verbose -Message ('2. {0}' -f $site)
+        Write-Verbose -Message ('Line {0}:  {1}' -f $(Get-CurrentLineNumber), $VerboseMsg.1)
         $PingReportInput | Add-Member -MemberType NoteProperty -Name $site -Value $null -Force
         $PingReportInput  | Export-Csv -Path $ReportFile -NoTypeInformation
       }
     }
+
   }
+    # Log file - with monthly rename
+
+    $OutputTable.Title | Out-File -FilePath $ReportFile -Append
+  
+
+  #endregion Initial Setup
+
+
 
   ForEach ($site in $Sites)  
   {
-    Write-Verbose  -Message $OutputMessage
+    Write-Verbose -Message ('Line {0}:  {1}' -f $(Get-CurrentLineNumber), $VerboseMsg.1)
         
     $PingReply = Test-NetConnection -ComputerName $site 
     
     $RoundTripTime = $PingReply.PingReplyDetails.RoundtripTime
     $PingSucceded = $PingReply.PingSucceeded
+    Write-Verbose -Message ('Line {0}:  {1}' -f $(Get-CurrentLineNumber), $VerboseMsg.1)
     
-      if(($PingSucceded -eq $true) -and ($RoundTripTime -eq 0))
-      {
-        $PingReply = Test-NetConnection -ComputerName $site 
-        $RoundTripTime = $PingReply.PingReplyDetails.RoundtripTime
-        $RemoteAddress = $PingReply.RemoteAddress
-        $PingSucceded = $PingReply.PingSucceeded
-      }
+    if(($PingSucceded -eq $true) -and ($RoundTripTime -eq 0))
+    {
+      $PingReply = Test-NetConnection -ComputerName $site 
+      $RoundTripTime = $PingReply.PingReplyDetails.RoundtripTime
+      $RemoteAddress = $PingReply.RemoteAddress
+      $PingSucceded = $PingReply.PingSucceeded
+    }
+ 
+    $RttTotal += $RoundTripTime
+    Write-Verbose -Message ('Line {0}:  {1}' -f $(Get-CurrentLineNumber), $VerboseMsg.1)
 
-      $RttTotal += $RoundTripTime
-
-
-      if($PingSucceded -eq $false)
-        {
-          $TotalResponses = $TotalResponses - 1
-          $NotRight ++
-        }
+    if($PingSucceded -eq $false)
+    {
+      $TotalResponses = $TotalResponses - 1
+      $NotRight ++
+    }
       
-        $OutputMessage = ('{0} - RoundTripTime is {1} ms.' -f $PingReply.Computername, $RoundTripTime)
-        Write-Verbose  -Message $OutputMessage
-        $ReportList += $OutputMessage
-      }
-      Else
-      {
-        $TotalResponses = $TotalResponses - 1
-      }
-    
-    $PingStat[$site] = [string]$RoundTripTime
+    $OutputMessage = 'Output Message'
+    ('{0} - RoundTripTime is {1} ms.' -f $PingReply.Computername, $RoundTripTime) | Tee-Object -FilePath $ReportFile -Append
+    Write-Verbose  -Message $OutputMessage
+    $ReportList += $OutputMessage
   }
+   
+  $PingStat[$site] = [string]$RoundTripTime
 
-  $RoundTripTime = $RttTotal/$TotalResponses
+
+  # $RoundTripTime = $RttTotal/$TotalResponses
   #$TimeStamp = Get-Date -Format G 
 
   $OutputTable.Report = ('{1} - {3} tested {0} remote sites and {2} responded. The average response time: {4}ms' -f $TotalSites, $TimeStamp, $TotalResponses, $env:USERNAME, [int]$RoundTripTime) 
@@ -222,12 +235,20 @@ function Test-FiberSatellite
       Write-Output -InputObject ('{0} Responded with 0 ms.  If you tested the "Localhost" one would be expected.' -f $NotRight)
     }
   }
+
   If($Log)
   {
-    $OutputTable.Report | Out-File -FilePath $ReportFile -Append
-    $ReportList | Out-File -FilePath $ReportFile -Append
-    ('-' * 30) | Out-File -FilePath $ReportFile -Append
-    Write-Output -InputObject ('You can find the full report at: {0}' -f $ReportFile)
+    $LogOutput = (@'
+
+{1}
+{0}
+ 
+{2}
+{1}
+'@ -f $($OutputTable.Report),('-' * 30),('You can find the full report at: {0}' -f $ReportFile))
+
+    $LogOutput | Out-File -FilePath $ReportFile -Append
+
     Start-Process -FilePath notepad -ArgumentList $ReportFile
     
     # Export the hashtable to the file
@@ -238,20 +259,21 @@ function Test-FiberSatellite
     Export-Csv -Path $ReportCsv -NoTypeInformation -Force -Append
   }
 
-
+  }
 
 $DailySplat = @{
-  'Log'     = $true
-  'ReportCsv' = 'c:\temp\Reports\Ping.csv'
-  'Sites'   = ('localhost', 'www.google.com', 'www.bing.com', 'www.yahoo.com')
-  'Verbose' = $true
+  'Log'      = $true
+  'ReportCsv' = "C:\Temp\Reports\FiberSatellite\Ping.csv"
+  'Reportfile' = 'C:\temp\Reports\FiberSatellite\Ping.log'
+  'Sites'    = ('localhost', 'www.google.com', 'www.bing.com', 'www.yahoo.com')
+  'Verbose'  = $true
 }
 
 #Test-FiberSatellite @DailySplat
   
 
 # For Testing:
-Test-FiberSatellite @dailysplat
+Test-FiberSatellite @DailySplat
 #Test-FiberSatellite -Simple
 #Test-FiberSatellite -Sites localhost,'yahoo.com'
 #Test-FiberSatellite -Sites localhost,'yahoo.com' -Simple 
