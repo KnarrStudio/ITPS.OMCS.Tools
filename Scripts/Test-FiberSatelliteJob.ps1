@@ -1,4 +1,8 @@
-﻿function Test-FiberSatellite
+﻿#requires
+#requires -Version 3.0
+s
+
+function Test-FiberSatellite
 {
   <#
       .SYNOPSIS
@@ -28,7 +32,7 @@
   )
   
   
-  #requires -Version 3.0
+
   Function Ping-Function
   {
     <#
@@ -153,8 +157,8 @@
       [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Output from the "Ping Function"')]
       [Object]
       $InputObject,
-      [Parameter(Mandatory = $false, Position = 1)]
-      $ReportName
+      [Parameter(Position = 1)]
+      [Object]$ReportName
     )
     #$null = $CsvReportFilename.Replace('.csv',('-{0}.csv' -f (Get-Date -Format yyyy)) )
   
@@ -224,7 +228,7 @@
       [Object]
       $InputObject,
       [Parameter(Mandatory = $false, Position = 1)]
-      $ReportName = 'C:\temp\Reports\FiberSatellite\FiberSatellite.log'
+      [string]$ReportName
     )
   
     # Set Variables
@@ -257,7 +261,7 @@
     $OutputTable.TimeStamp | Out-File -FilePath $ReportFile -Append
     Foreach($site in $InputObject)
     {
-      Write-Verbose -Message "Site = $site"
+      Write-Verbose -Message ('Site = {0}' -f $site)
       #region Math
       $TotalRtt += ($site.responseTime)
       if($site.PingResult -eq 'Success')
@@ -270,7 +274,7 @@
   
     # Calculate Average RTT
     $AverageRTT = $TotalRtt/$InputObjectcount
-    Write-Verbose -Message "Average Rtt = $AverageRTT"
+    Write-Verbose -Message ('Average Rtt = {0}' -f $AverageRTT)
  
     # Create the Report bottomlines
     $OutputTable.Report = (@'
@@ -293,7 +297,7 @@ You can find the full report at: {4}
   #Testing Below
   $SplatLogReport = @{
     InputObject = $Pingresult
-    ReportName  = "C:\Temp\Reports\FiberSatellite\Fiber-Satellite.log"
+    ReportName  = 'C:\Temp\Reports\FiberSatellite\Fiber-Satellite.log'
     Verbose = $true
   }
   
