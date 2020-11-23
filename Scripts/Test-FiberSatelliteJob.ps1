@@ -1,7 +1,4 @@
-﻿#requires
-#requires -Version 3.0
-s
-
+﻿#requires -Version 3.0
 function Test-FiberSatellite
 {
   <#
@@ -22,16 +19,41 @@ function Test-FiberSatellite
   param
   (
     [Parameter(Position = 0)]
-    [String[]] $Sites = ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com')
-    <#    ,
-        [Parameter (ParameterSetName = 'Log')]
-        [String]$ReportFile = "$env:SystemDrive\temp\Reports\FiberSatellite\FiberSatellite.log",
-        [Parameter(Mandatory=$false ,HelpMessage = 'CSV file that is used for trending',Position = 1,ParameterSetName = 'Log')]
-        [String]$ReportCsv
-    #>
+    [String[]] $Sites = ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com'),
+    [Parameter (Mandatory ,Position = 1)]
+    [String]$LogFileName,
+    [Parameter(Mandatory ,Position = 2)]
+    [String]$CsvFileName
   )
   
   
+  function Get-CurrentLineNumber
+  {
+    <#
+        .EXAMPLE
+        Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 7 ),'') 
+    #>
+    param
+    (
+      [Parameter(Mandatory,HelpMessage = 'Add help message for user', Position = 0)]
+      [int]$MsgNum
+    )
+    $VerboseMsg = @{
+      1 = 'Set Variable'
+      2 = 'Set Switch Variable'
+      3 = 'Set Path/FileName'
+      4 = 'Start Function'
+      5 = 'Start Loop'
+      6 = 'End Loop'
+      7 = 'Write Data'
+      99 = 'Current line number'
+    }
+    if($MsgNum -gt $VerboseMsg.Count)
+    {
+      $MsgNum = 99
+    }#$VerboseMsg.Count}
+    'Line {0}:  {1}' -f $MyInvocation.ScriptLineNumber, $($VerboseMsg.$MsgNum)
+  } 
 
   Function Ping-Function
   {
@@ -42,7 +64,7 @@ function Test-FiberSatellite
     param
     (
       [Parameter(Position = 0)]
-      [String[]] $Sites = ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com')
+      [String[]] $Sites
     )
     Begin {
       # Set Variables  
@@ -121,7 +143,7 @@ function Test-FiberSatellite
           $NotRight = $NotRight + 1
         }
       
-        Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 7 ),'$PingHTList') 
+        Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 7 ), '$PingHTList') 
         $PingHTList.DateStamp = [String]$TimeStamp
         $PingHTList.Site = [String]$site.Address
         $PingHTList.IpAddress = [String]$site.IPV4Address  
@@ -131,19 +153,14 @@ function Test-FiberSatellite
         Write-Verbose -Message ('{0} - {1} - {2}' -f $site.Address, $site.ResponseTime, $site.StatusCode)
       
         # Converts the hash table to object
-        Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 7 ),'$PingHTList') 
+        Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 7 ), '$PingHTList') 
         $null = $ReportList.Add([pscustomobject]$PingHTList)
-      
       } # End ForEach
     } # End Process
     End {
       $ReportList
     }
   }
-
-  #Testing Below
-  #$Sites = ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com')
-  $Pingresult = Ping-Function -Sites $Sites -Verbose
 
   function Write-CsvReport
   {
@@ -155,15 +172,14 @@ function Test-FiberSatellite
     param
     (
       [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Output from the "Ping Function"')]
-      [Object]
-      $InputObject,
-      [Parameter(Position = 1)]
+      [Object]$InputObject,
+      [Parameter(Mandatory = $true, Position = 1)]
       [Object]$ReportName
     )
     #$null = $CsvReportFilename.Replace('.csv',('-{0}.csv' -f (Get-Date -Format yyyy)) )
   
     # Set Variables
-    Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 1 ),'$HashTable1, $ArrayList1') 
+    Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 1 ), '$HashTable1, $ArrayList1') 
     $HashTable1 = [Ordered]@{
       'DateStamp' = ''
     }
@@ -172,7 +188,7 @@ function Test-FiberSatellite
     if($ReportName -and (Test-Path -Path $ReportName) )
     {
       # Trending CSV file setup and site addition
-      Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 1 ),'$ImportedData')
+      Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 1 ), '$ImportedData')
       $ImportedData = Import-Csv -Path $ReportName
       $ColumnNames = ($ImportedData[0].psobject.Properties).name
       # Add any new sites to the report file
@@ -190,10 +206,10 @@ function Test-FiberSatellite
     else
     {
       New-Item -Path $ReportName -ItemType File -Force
-      Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 1 ),'$ReportName') 
+      Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 1 ), '$ReportName') 
     }
     # Write Data to HashTable1
-    Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 7 ),'$HashTable1') 
+    Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 7 ), '$HashTable1') 
     $HashTable1.DateStamp = $InputObject[0].DateStamp
     $InputObject | ForEach-Object -Process {
       $HashTable1[($_.Site)] = $_.ResponseTime
@@ -206,14 +222,6 @@ function Test-FiberSatellite
     $ArrayList1  |     Export-Csv -Path $ReportName -NoTypeInformation -Force -Append
   }
 
-  # Testing Below
-  $SplatCsvReport = @{
-    InputObject = $Pingresult
-    ReportName  = "$env:HOMEDRIVE\Temp\Reports\FiberSatellite\ReportCsvFunction2.csv"
-    Verbose = $true
-  }
-
-  Write-CsvReport @SplatCsvReport
 
   function Write-ReportLog
   {
@@ -294,14 +302,31 @@ You can find the full report at: {4}
     # Start-Process -FilePath notepad -ArgumentList $ReportFile
   }
   
-  #Testing Below
+  # Runs the Script here
+  $Pingresult = Ping-Function -Sites $Sites 
+
   $SplatLogReport = @{
     InputObject = $Pingresult
-    ReportName  = 'C:\Temp\Reports\FiberSatellite\Fiber-Satellite.log'
-    Verbose = $true
+    ReportName  = $LogFileName
+    #Verbose     = $true
   }
-  
+   
+  $SplatCsvReport = @{
+    InputObject = $Pingresult
+    ReportName  = $CsvFileName
+    #Verbose     = $true
+  }
+
   Write-ReportLog @SplatLogReport 
+  Write-CsvReport @SplatCsvReport
 }
 
-Test-FiberSatellite -Sites ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com')
+$SplatFiberSatellite = @{
+  LogFileName = "$env:SystemDrive\temp\Reports\FiberSatellite\FiberSatellite.log"
+  CsvFileName = "$env:HOMEDRIVE\Temp\Reports\FiberSatellite\ReportCsvFunction2.csv"
+  Sites       = ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com','generikstorage')
+  Verbose = $false
+}
+
+ 
+Test-FiberSatellite @SplatFiberSatellite
