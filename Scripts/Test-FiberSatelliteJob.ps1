@@ -103,6 +103,7 @@ function Test-FiberSatellite
         #>
         param([Parameter(Mandatory = $true)]
         [int]$InputObject)
+            
         switch ($InputObject)
         {      
           0  
@@ -137,12 +138,13 @@ function Test-FiberSatellite
       # Converts the hash table to an Object
       ForEach($site in $ReceivedJob)
       {
-        if($site.StatusCode -ne 0)
+        if(($site.StatusCode -ne 0) -or ($site.PrimaryAddressResolutionStatus  -ne 0))
         {
           $TotalResponses = $TotalResponses - 1
           $NotRight = $NotRight + 1
+          Write-Verbose -Message ('Responses: {0} - Not Right {1} - Status {2} - Address Resolution {3}' -f $TotalResponses, $NotRight, $site.StatusCode,$site.PrimaryAddressResolutionStatus)
         }
-      
+      if($site.PrimaryAddressResolutionStatus  -ne 0){$site.StatusCode = 999}
         Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 7 ), '$PingHTList') 
         $PingHTList.DateStamp = [String]$TimeStamp
         $PingHTList.Site = [String]$site.Address
@@ -285,12 +287,10 @@ function Test-FiberSatellite
     Write-Verbose -Message ('Average Rtt = {0}' -f $AverageRTT)
  
     # Create the Report bottomlines
-    $OutputTable.Report = (@'
-
-{0:n2} ..... Average Response Time. 
+    $OutputTable.Report = ('{0,3:n2} ..... Average Response Time.' -f $AverageRTT)
+    $OutputTable.Report += (@'
 {1} tested {2} remote sites and {3} responded. 
 You can find the full report at: {4}
- 
  {5}
 
 '@ -f $AverageRTT, $env:USERNAME, $InputObjectcount, $TotalResponses, $ReportFile, ('-' * 30))
@@ -324,9 +324,12 @@ You can find the full report at: {4}
 $SplatFiberSatellite = @{
   LogFileName = "$env:SystemDrive\temp\Reports\FiberSatellite\FiberSatellite.log"
   CsvFileName = "$env:HOMEDRIVE\Temp\Reports\FiberSatellite\ReportCsvFunction2.csv"
-  Sites       = ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com','generikstorage')
-  Verbose = $false
+  Sites       = ('localhost', 'www.google.com', 'www.bing.com','mouse.house', 'www.wolframalpha.com', 'www.yahoo.com','www.wikipedia.org')
+  Verbose = $true
 }
 
  
 Test-FiberSatellite @SplatFiberSatellite
+
+
+#Test-Connection ('localhost', 'www.google.com', 'www.bing.com','mouse.house', 'www.wolframalpha.com', 'www.yahoo.com','www.wikipedia.org') -Count 1 -AsJob
