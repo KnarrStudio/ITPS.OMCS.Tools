@@ -287,7 +287,7 @@ function Test-FiberSatellite
     # Create the Report bottomlines
     $OutputTable.Report = (@'
 
-{0,-3} ..... Average Response Time. 
+{0:n2} ..... Average Response Time. 
 {1} tested {2} remote sites and {3} responded. 
 You can find the full report at: {4}
  
