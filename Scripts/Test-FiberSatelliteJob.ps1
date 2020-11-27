@@ -1,4 +1,12 @@
 ﻿#requires -Version 3.0
+
+$SplatFiberSatellite = @{
+  LogFileName = "$env:SystemDrive\temp\Reports\FiberSatellite\FiberSatellite.log"
+  CsvFileName = "$env:HOMEDRIVE\Temp\Reports\FiberSatellite\ReportCsvFunction2.csv"
+  Sites       = ('localhost', 'www.google.com', 'www.bing.com', 'mouse.house', 'www.wolframalpha.com', 'www.yahoo.com', 'www.wikipedia.org')
+  Verbose     = $false
+}
+
 function Test-FiberSatellite
 {
   <#
@@ -26,6 +34,25 @@ function Test-FiberSatellite
     [String]$CsvFileName
   )
   
+  function Get-AverageRTT 
+  {
+    <#
+        .SYNOPSIS
+        Returns the average response times by calculating the information in the $ReceivedJob object
+    #>
+    param
+    (
+      [Parameter(Mandatory = $true, Position = 0)]
+      [Object]$ReceivedJob
+    )
+    $RttTotal = $null
+    ForEach($SiteJob in $ReceivedJob)
+    {
+      $RttTotal += $SiteJob.ResponseTime
+    }
+    [float]$RttTotal / $ReceivedJob.Count
+  }
+    
   
   function Get-CurrentLineNumber
   {
@@ -75,26 +102,6 @@ function Test-FiberSatellite
       $PingHTList = [Ordered]@{
         'DateStamp' = $TimeStamp
       }
-    
-      function Get-AverageRTT 
-      {
-        <#
-            .SYNOPSIS
-            Returns the average response times by calculating the information in the $ReceivedJob object
-        #>
-        param
-        (
-          [Parameter(Mandatory = $true, Position = 0)]
-          [Object]$ReceivedJob
-        )
-        $RttTotal = $null
-        ForEach($SiteJob in $ReceivedJob)
-        {
-          $RttTotal += $SiteJob.ResponseTime
-        }
-        [float]$RttTotal / $ReceivedJob.Count
-      }
-    
       function Show-PingStatus 
       {
         <#
@@ -138,21 +145,21 @@ function Test-FiberSatellite
       # Converts the hash table to an Object
       ForEach($site in $ReceivedJob)
       {
-        if(($site.StatusCode -ne 0) -or ($site.PrimaryAddressResolutionStatus  -ne 0))
+        if($site.PrimaryAddressResolutionStatus  -ne 0)
         {
           $TotalResponses = $TotalResponses - 1
           $NotRight = $NotRight + 1
-          Write-Verbose -Message ('Responses: {0} - Not Right {1} - Status {2} - Address Resolution {3}' -f $TotalResponses, $NotRight, $site.StatusCode,$site.PrimaryAddressResolutionStatus)
+          Write-Verbose -Message ('Responses: {0} - Not Right {1} - Address Resolution {2}' -f $TotalResponses, $NotRight, $site.PrimaryAddressResolutionStatus)
         }
-      if($site.PrimaryAddressResolutionStatus  -ne 0){$site.StatusCode = 999}
+      
         Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 7 ), '$PingHTList') 
         $PingHTList.DateStamp = [String]$TimeStamp
         $PingHTList.Site = [String]$site.Address
         $PingHTList.IpAddress = [String]$site.IPV4Address  
         $PingHTList.ResponseTime = [String]$site.ResponseTime
-        $PingHTList.PingResult = (Show-PingStatus -InputObject ($site.StatusCode))
+        $PingHTList.PingResult = (Show-PingStatus -InputObject ($site.PrimaryAddressResolutionStatus))
       
-        Write-Verbose -Message ('{0} - {1} - {2}' -f $site.Address, $site.ResponseTime, $site.StatusCode)
+        Write-Verbose -Message ('{0} - {1} - {2}' -f $site.Address, $site.ResponseTime, $site.PrimaryAddressResolutionStatus)
       
         # Converts the hash table to object
         Write-Verbose  -Message ('{0} {1}' -f $(Get-CurrentLineNumber -MsgNum 7 ), '$PingHTList') 
@@ -176,7 +183,9 @@ function Test-FiberSatellite
       [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Output from the "Ping Function"')]
       [Object]$InputObject,
       [Parameter(Mandatory = $true, Position = 1)]
-      [Object]$ReportName
+      [Object]$ReportName,
+      [Parameter(Mandatory = $false, Position = 2)]
+      [Switch]$ShowPath
     )
     #$null = $CsvReportFilename.Replace('.csv',('-{0}.csv' -f (Get-Date -Format yyyy)) )
   
@@ -222,6 +231,8 @@ function Test-FiberSatellite
     # Write "Export" to the CSV file
     Write-Verbose  -Message ('{0}' -f $(Get-CurrentLineNumber -MsgNum 1 )) 
     $ArrayList1  |     Export-Csv -Path $ReportName -NoTypeInformation -Force -Append
+    
+    if($ShowPath){Write-Output ('You can find the CSV report at: {0}' -f $ReportName)}
   }
 
 
@@ -279,7 +290,7 @@ function Test-FiberSatellite
         $TotalResponses ++
       }
       #endregion Math       
-      ('{0,-3} ..... {1}' -f $site.ResponseTime, $site.Site) | Tee-Object -FilePath $ReportFile -Append
+      ('{0,3} ..... {1}' -f $site.ResponseTime, $site.Site) | Tee-Object -FilePath $ReportFile -Append
     }
   
     # Calculate Average RTT
@@ -290,7 +301,7 @@ function Test-FiberSatellite
     $OutputTable.Report = ('{0,3:n2} ..... Average Response Time.' -f $AverageRTT)
     $OutputTable.Report += (@'
 {1} tested {2} remote sites and {3} responded. 
-You can find the full report at: {4}
+You can find the monthly log report at: {4}
  {5}
 
 '@ -f $AverageRTT, $env:USERNAME, $InputObjectcount, $TotalResponses, $ReportFile, ('-' * 30))
@@ -302,34 +313,26 @@ You can find the full report at: {4}
     # Start-Process -FilePath notepad -ArgumentList $ReportFile
   }
   
-  # Runs the Script here
+  # Runs the Functions here
   $Pingresult = Ping-Function -Sites $Sites 
 
   $SplatLogReport = @{
     InputObject = $Pingresult
     ReportName  = $LogFileName
-    #Verbose     = $true
   }
    
   $SplatCsvReport = @{
     InputObject = $Pingresult
     ReportName  = $CsvFileName
-    #Verbose     = $true
+    ShowPath = $true
   }
 
   Write-ReportLog @SplatLogReport 
   Write-CsvReport @SplatCsvReport
 }
 
-$SplatFiberSatellite = @{
-  LogFileName = "$env:SystemDrive\temp\Reports\FiberSatellite\FiberSatellite.log"
-  CsvFileName = "$env:HOMEDRIVE\Temp\Reports\FiberSatellite\ReportCsvFunction2.csv"
-  Sites       = ('localhost', 'www.google.com', 'www.bing.com','mouse.house', 'www.wolframalpha.com', 'www.yahoo.com','www.wikipedia.org')
-  Verbose = $true
-}
 
- 
+
+# Start Script 
 Test-FiberSatellite @SplatFiberSatellite
 
-
-#Test-Connection ('localhost', 'www.google.com', 'www.bing.com','mouse.house', 'www.wolframalpha.com', 'www.yahoo.com','www.wikipedia.org') -Count 1 -AsJob
