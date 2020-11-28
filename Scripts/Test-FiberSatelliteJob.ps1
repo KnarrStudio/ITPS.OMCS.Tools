@@ -28,10 +28,14 @@ function Test-FiberSatellite
   (
     [Parameter(Position = 0)]
     [String[]] $Sites = ('localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com'),
-    [Parameter (Mandatory ,Position = 1)]
+    [Parameter (Mandatory = $false, Position = 1,ParameterSetName = 'log')]
+    [ValidateSet('All','Log','CSV')]
+    [String]$Output = 'Results',
+    [Parameter (Mandatory ,Position = 2,ParameterSetName = 'log')]
     [String]$LogFileName,
-    [Parameter(Mandatory ,Position = 2)]
+    [Parameter(Mandatory ,Position = 3,ParameterSetName = 'log')]
     [String]$CsvFileName
+
   )
   
   function Get-AverageRTT 
@@ -232,7 +236,10 @@ function Test-FiberSatellite
     Write-Verbose  -Message ('{0}' -f $(Get-CurrentLineNumber -MsgNum 1 )) 
     $ArrayList1  |     Export-Csv -Path $ReportName -NoTypeInformation -Force -Append
     
-    if($ShowPath){Write-Output ('You can find the CSV report at: {0}' -f $ReportName)}
+    if($ShowPath)
+    {
+      Write-Output -InputObject ('You can find the CSV report at: {0}' -f $ReportName)
+    }
   }
 
 
@@ -324,15 +331,33 @@ You can find the monthly log report at: {4}
   $SplatCsvReport = @{
     InputObject = $Pingresult
     ReportName  = $CsvFileName
-    ShowPath = $true
+    ShowPath    = $true
   }
 
-  Write-ReportLog @SplatLogReport 
-  Write-CsvReport @SplatCsvReport
+  switch($Output)
+  {
+    Log 
+    {
+      Write-ReportLog @SplatLogReport 
+    }
+    CSV 
+    {
+      Write-CsvReport @SplatCsvReport
+    }
+    All  
+    {
+      Write-ReportLog @SplatLogReport
+      Write-CsvReport @SplatCsvReport
+    }
+    Results 
+    {
+      Return $Pingresult
+    }
+  }
 }
-
 
 
 # Start Script 
 Test-FiberSatellite @SplatFiberSatellite
 
+Test-FiberSatellite -Sites yahoo.com, mouse.house -Verbose
