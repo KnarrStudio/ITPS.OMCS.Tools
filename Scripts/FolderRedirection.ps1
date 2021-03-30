@@ -1,40 +1,39 @@
 ﻿#requires -Version 3.0
-  <#PSScriptInfo
+<#PSScriptInfo
 
-      .VERSION 1.3
+    .VERSION 1.3
 
-      .GUID ffd1c052-9783-4fe0-afff-76d070421959
+    .GUID ffd1c052-9783-4fe0-afff-76d070421959
 
-      .AUTHOR Erik
+    .AUTHOR Erik
 
-      .COMPANYNAME Knarr Studio
+    .COMPANYNAME Knarr Studio
 
-      .COPYRIGHT
+    .COPYRIGHT
 
-      .TAGS Folder Redirecton Self Help 
+    .TAGS Folder Redirecton Self Help 
 
-      .LICENSEURI
+    .LICENSEURI
 
-      .PROJECTURI https://github.com/KnarrStudio/ITPS.OMCS.Tools
+    .PROJECTURI https://github.com/KnarrStudio/ITPS.OMCS.Tools
 
-      .ICONURI
+    .ICONURI
 
-      .EXTERNALMODULEDEPENDENCIES 
+    .EXTERNALMODULEDEPENDENCIES 
 
-      .REQUIREDSCRIPTS
+    .REQUIREDSCRIPTS
 
-      .EXTERNALSCRIPTDEPENDENCIES
+    .EXTERNALSCRIPTDEPENDENCIES
 
-      .RELEASENOTES
+    .RELEASENOTES
 
 
-      .PRIVATEDATA
+    .PRIVATEDATA
 
-  #>
+#>
 
-  function Get-FolderRedirection
+function Get-FolderRedirection
 {
-
   <#
       .SYNOPSIS
       Verify the user's folder redirection.
@@ -114,38 +113,36 @@
   {
     
       
-$KeyIndex = $null
-foreach($RegKey in $Keys)
-      {
+    $KeyIndex = $null
+    foreach($RegKey in $Keys)
+    {
       $CurrentIndex = [array]::indexof($Keys,$RegKey)
       Write-Verbose  -Message ('CurrentIndex = {0}' -f $CurrentIndex)
-        if($KeyIndex -ne $CurrentIndex){
-            $KeyIndex = $CurrentIndex
-            $CompareList += $RegKey.ToString()
-        }
+      if($KeyIndex -ne $CurrentIndex)
+      {
+        $KeyIndex = $CurrentIndex
+        $CompareList += $RegKey.ToString()
+      }
 
-
-
-        foreach($FolderKey in $FolderList.keys)
-    {
-      Write-Verbose -Message ('FolderName = {0}' -f $FolderName)
-      Write-Verbose -Message ('OldPath = {0}' -f $OldPath)
-      Write-Verbose -Message ('FolderKey = {0}' -f $FolderKey)
-        Write-Verbose -Message ('RegKey = {0}' -f $RegKey)
-        
+      foreach($FolderKey in $FolderList.keys)
+      {
         $FolderName = $FolderList.Item($FolderKey)
-      $OldPath = ('{0}\{1}' -f $LocalPath, $FolderName)
-      $LeafKey = Split-Path -Path $RegKey -Leaf
+        $OldPath = ('{0}\{1}' -f $LocalPath, $FolderName)
+        $LeafKey = Split-Path -Path $RegKey -Leaf
         $CurrentSettings = Get-ItemProperty -Path $RegKey -Name $FolderKey
         $newlist = ('{2}: {0} = {1}' -f $FolderKey, $CurrentSettings.$FolderKey, $LeafKey)
         Write-Verbose -Message $newlist
         $CompareList += $newlist
-       
+        
+        Write-Verbose -Message ('FolderName = {0}' -f $FolderName)
+        Write-Verbose -Message ('OldPath = {0}' -f $OldPath)
+        Write-Verbose -Message ('FolderKey = {0}' -f $FolderKey)
+        Write-Verbose -Message ('RegKey = {0}' -f $RegKey)
+        
         <# F8 Testing --
             $Key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
             Get-ItemProperty -Path $key
         #>
-
       }
     }
   }
@@ -155,14 +152,13 @@ foreach($RegKey in $Keys)
     {
       $CompareList  
       Write-Output -InputObject ('Log File: {0}' -f $resultlog)
-          }
+    }
     $CompareList | Out-File -FilePath $resultlog
   }
 }
 
 function Set-FolderRedirection
 {
-
   <#
       .SYNOPSIS
       Change the user's folder redirection.
@@ -208,7 +204,7 @@ function Set-FolderRedirection
   Param
   (
     # $RemotePath Path to the Users's home drive if "remotepath" is not set.  Often the 'H:' drive.
-    [Parameter(Mandatory=$True,ValueFromPipelineByPropertyName,Position = 0)]
+    [Parameter(Mandatory = $True,HelpMessage='Add the new location for the folder redirection',ValueFromPipelineByPropertyName,Position = 0)]
     [string]$RemotePath,
     [Switch]$NoCopy,
     [Switch]$Quiet,
@@ -254,26 +250,27 @@ function Set-FolderRedirection
         Write-Verbose -Message ('NewPath = {0}' -f $NewPath)
         try
         {
-        New-Item -Path $NewPath -ItemType Directory -ErrorAction Stop
+          New-Item -Path $NewPath -ItemType Directory -ErrorAction Stop
         }
         catch
         {
-        Write-Output -InputObject ('Error File: {0}' -f $errorlog)
-        $null = $NewPath + $_.Exception.Message | Out-File -FilePath $errorlog -Append        
+          Write-Output -InputObject ('Error File: {0}' -f $errorlog)
+          $null = $NewPath + $_.Exception.Message | Out-File -FilePath $errorlog -Append        
         }
       }
 
-      if(-not $NoCopy){
-          Write-Verbose -Message ('OldPath = {0}' -f $OldPath)
-          try
-             {
-                Copy-Item -Path $OldPath -Destination $RemotePath -Force -Recurse -ErrorAction Stop
-      }
-          catch
-             {
-        Write-Output -InputObject ('Error File: {0}' -f $errorlog)
-        $null = $OldPath + $_.Exception.Message | Out-File -FilePath $errorlog -Append
-      }
+      if(-not $NoCopy)
+      {
+        Write-Verbose -Message ('OldPath = {0}' -f $OldPath)
+        try
+        {
+          Copy-Item -Path $OldPath -Destination $RemotePath -Force -Recurse -ErrorAction Stop
+        }
+        catch
+        {
+          Write-Output -InputObject ('Error File: {0}' -f $errorlog)
+          $null = $OldPath + $_.Exception.Message | Out-File -FilePath $errorlog -Append
+        }
       }
 
       foreach($RegKey in $Keys)
@@ -307,7 +304,7 @@ function Set-FolderRedirection
     {
       $CompareList | Sort-Object
       Write-Output -InputObject ('Log File: {0}' -f $resultlog)
-          }
+    }
     $CompareList |
     Sort-Object |
     Out-File -FilePath $resultlog
