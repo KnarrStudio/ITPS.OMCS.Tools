@@ -1,11 +1,11 @@
 ﻿#requires -Version 3.0
-function Repair-FolderRedirection
+function Get-FolderRedirection
 {
   <#PSScriptInfo
 
       .VERSION 1.3
 
-      .GUID cc7ee278-5103-4711-909c-315e3915ba92
+      .GUID c8170885-61c4-4018-97d3-6546c71f9b81
 
       .AUTHOR Erik
 
@@ -35,12 +35,11 @@ function Repair-FolderRedirection
   #>
   <#
       .SYNOPSIS
-      Verify and repair (redirect) the user's folder redirection.
+      Verify the user's folder redirection.
 
       .DESCRIPTION
       From a normal Powershell console. 
-      The script will verify that the path exists, and copies all of the local files to the "Remote" location, then changes the registry to mach that remote location.  
-      Changes the folder redirection settings in the registry.  
+      The script will verify that the path exists and displays it to the console.  
       This should be run prior to imaging a user's workstaion.
 
       .PARAMETER RemotePath
@@ -53,11 +52,11 @@ function Repair-FolderRedirection
       Suppresses output to console
 
       .EXAMPLE
-      Repair-FolderRedirection -RemotePath 'H:\_MyComputer' -Repair
+      Get-FolderRedirection -RemotePath 'H:\_MyComputer' -Repair
       This will redirect the folders to the path on the "H:" drive.  You must use the 'Repair' parameter if you want to make changes.
 
       .EXAMPLE
-      Repair-FolderRedirection
+      Get-FolderRedirection
       Sends the current settings to the screen
 
       .NOTES
@@ -107,6 +106,7 @@ function Repair-FolderRedirection
   }
   Process
   {
+    $Keys | ForEach-Object {Write-Output('Registry Key: {0}' -f $_)}
     foreach($FolderKey in $FolderList.keys)
     {
       $FolderName = $FolderList.Item($FolderKey)
@@ -153,7 +153,7 @@ function Repair-FolderRedirection
        
         <# F8 Testing --
             $Key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
-            Get-ItemProperty -Path $ke
+            Get-ItemProperty -Path $key
         #>
 
         if($Repair)
@@ -179,34 +179,7 @@ function Repair-FolderRedirection
 
 
 # Testing:
-# Repair-FolderRedirection -Silent
-# Repair-FolderRedirection -Repair -RemotePath h:\_MyComputer -Confirm 
+# Get-FolderRedirection -Silent
+# Get-FolderRedirection -Repair -RemotePath h:\_MyComputer -Confirm 
 
 
-
-
-
-# SIG # Begin signature block
-# MIID7QYJKoZIhvcNAQcCoIID3jCCA9oCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
-# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjmAd7kYOiD3flXoNRiLrKxTD
-# Zs2gggINMIICCTCCAXagAwIBAgIQyWSKL3Rtw7JMh5kRI2JlijAJBgUrDgMCHQUA
-# MBYxFDASBgNVBAMTC0VyaWtBcm5lc2VuMB4XDTE3MTIyOTA1MDU1NVoXDTM5MTIz
-# MTIzNTk1OVowFjEUMBIGA1UEAxMLRXJpa0FybmVzZW4wgZ8wDQYJKoZIhvcNAQEB
-# BQADgY0AMIGJAoGBAKYEBA0nxXibNWtrLb8GZ/mDFF6I7tG4am2hs2Z7NHYcJPwY
-# CxCw5v9xTbCiiVcPvpBl7Vr4I2eR/ZF5GN88XzJNAeELbJHJdfcCvhgNLK/F4DFp
-# kvf2qUb6l/ayLvpBBg6lcFskhKG1vbEz+uNrg4se8pxecJ24Ln3IrxfR2o+BAgMB
-# AAGjYDBeMBMGA1UdJQQMMAoGCCsGAQUFBwMDMEcGA1UdAQRAMD6AEMry1NzZravR
-# UsYVhyFVVoyhGDAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlboIQyWSKL3Rtw7JMh5kR
-# I2JlijAJBgUrDgMCHQUAA4GBAF9beeNarhSMJBRL5idYsFZCvMNeLpr3n9fjauAC
-# CDB6C+V3PQOvHXXxUqYmzZpkOPpu38TCZvBuBUchvqKRmhKARANLQt0gKBo8nf4b
-# OXpOjdXnLeI2t8SSFRltmhw8TiZEpZR1lCq9123A3LDFN94g7I7DYxY1Kp5FCBds
-# fJ/uMYIBSjCCAUYCAQEwKjAWMRQwEgYDVQQDEwtFcmlrQXJuZXNlbgIQyWSKL3Rt
-# w7JMh5kRI2JlijAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
-# ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUctcJjKxjdAhy4CGJaV9LBJ0FOC4w
-# DQYJKoZIhvcNAQEBBQAEgYCZhwOAn0fhGce6aS0MRuiKRGNtUWlW6yJerLacIQGx
-# X/O3EJtWgSQBBXhu2DDPFLOWig0ghcIkBB4srhfUGiNMPZ9ER3Kyi8KpOSM/Lku9
-# yUf5aaPSRxLJR0OTObBMzCgaxshSnOBy2V+JnU8uJf1FeEcivu4c5yjFfnyl/HIO
-# 6A==
-# SIG # End signature block
