@@ -78,7 +78,7 @@ function Get-FolderRedirection
       Display to console.
   #>
 
-  [CmdletBinding(SupportsShouldProcess,ConfirmImpact = 'High')]
+  [CmdletBinding(SupportsShouldProcess,ConfirmImpact = 'Low')]
   [OutputType([int])]
   Param
   (
@@ -91,7 +91,7 @@ function Get-FolderRedirection
  
   Begin
   {
-    $ConfirmPreference = 'High'
+    #$ConfirmPreference = 'High'
    
     $CompareList = @()
 
@@ -171,7 +171,7 @@ function Set-FolderRedirection
       Makes changes to the home folders based on what you put here.  Such as - "H:\_MyComputer".
 
       .PARAMETER NoCopy
-      Stops the items in the old path, most of the time 'local' to the new path.
+      Bypassess the process of copying the items in the old path, most of the time 'local' to the new path.
 
       .PARAMETER Quiet
       Suppresses output to console
@@ -204,18 +204,18 @@ function Set-FolderRedirection
   Param
   (
     # $RemotePath Path to the Users's home drive if "remotepath" is not set.  Often the 'H:' drive.
-    [Parameter(Mandatory = $True,HelpMessage='Add the new location for the folder redirection',ValueFromPipelineByPropertyName,Position = 0)]
+    [Parameter(Mandatory = $True,HelpMessage = 'Add the new location for the folder redirection. RemotePath Path to the Users''s home drive.  Often the "H:" drive. Such as - "H:\_MyComputer"',ValueFromPipelineByPropertyName,Position = 0)]
     [string]$RemotePath,
     [Switch]$NoCopy,
     [Switch]$Quiet,
     [string]$errorlog = "$env:TEMP\ErrorLog-FolderRedirection-$(Get-Date -UFormat %d%S).txt",
-    [string]$resultlog = "$env:TEMP\FolderRedirection-$($env:USERNAME).log"
+    [string]$resultlog = "$env:TEMP\FolderRedirection-$($env:USERNAME).log",
+    [Object]$param
 
   )
- 
   Begin
   {
-    $ConfirmPreference = 'High'
+    #$ConfirmPreference = 'High'
    
     $CompareList = @()
 
@@ -235,71 +235,73 @@ function Set-FolderRedirection
   }
   Process
   {
-    # The reason for looping through the FolderList first instead of the Registry Keys is to find out which of the folders have been redirected first.
-    foreach($FolderKey in $FolderList.keys)
+    if ($PSCmdlet.ShouldProcess($param)) 
     {
-      $FolderName = $FolderList.Item($FolderKey)
-      $OldPath = ('{0}\{1}' -f $LocalPath, $FolderName)
-      $NewPath = ('{0}\{1}' -f $RemotePath, $FolderName)
-      Write-Verbose -Message ('FolderName = {0}' -f $FolderName)
-      Write-Verbose -Message ('OldPath = {0}' -f $OldPath)
-      Write-Verbose -Message ('NewPath = {0}' -f $NewPath)
-
-      If(-Not(Test-Path -Path $NewPath ))
+      # The reason for looping through the FolderList first instead of the Registry Keys is to find out which of the folders have been redirected first.
+      foreach($FolderKey in $FolderList.keys)
       {
-        Write-Verbose -Message ('NewPath = {0}' -f $NewPath)
-        try
-        {
-          New-Item -Path $NewPath -ItemType Directory -ErrorAction Stop
-        }
-        catch
-        {
-          Write-Output -InputObject ('Error File: {0}' -f $errorlog)
-          $null = $NewPath + $_.Exception.Message | Out-File -FilePath $errorlog -Append        
-        }
-      }
-
-      if(-not $NoCopy)
-      {
-        Write-Verbose -Message ('OldPath = {0}' -f $OldPath)
-        try
-        {
-          Copy-Item -Path $OldPath -Destination $RemotePath -Force -Recurse -ErrorAction Stop
-        }
-        catch
-        {
-          Write-Output -InputObject ('Error File: {0}' -f $errorlog)
-          $null = $OldPath + $_.Exception.Message | Out-File -FilePath $errorlog -Append
-        }
-      }
-
-      foreach($RegKey in $Keys)
-      {
-        Write-Verbose -Message ('FolderKey = {0}' -f $FolderKey)
+        $FolderName = $FolderList.Item($FolderKey)
+        $OldPath = ('{0}\{1}' -f $LocalPath, $FolderName)
+        $NewPath = ('{0}\{1}' -f $RemotePath, $FolderName)
         Write-Verbose -Message ('FolderName = {0}' -f $FolderName)
-        Write-Verbose -Message ('RegKey = {0}' -f $RegKey)
+        Write-Verbose -Message ('OldPath = {0}' -f $OldPath)
+        Write-Verbose -Message ('NewPath = {0}' -f $NewPath)
+
+        If(-Not(Test-Path -Path $NewPath ))
+        {
+          Write-Verbose -Message ('NewPath = {0}' -f $NewPath)
+          try
+          {
+            New-Item -Path $NewPath -ItemType Directory -ErrorAction Stop
+          }
+          catch
+          {
+            Write-Output -InputObject ('Error File: {0}' -f $errorlog)
+            $null = $NewPath + $_.Exception.Message | Out-File -FilePath $errorlog -Append        
+          }
+        }
+
+        if(-not $NoCopy)
+        {
+          Write-Verbose -Message ('OldPath = {0}' -f $OldPath)
+          try
+          {
+            Copy-Item -Path $OldPath -Destination $RemotePath -Force -Recurse -ErrorAction Stop
+          }
+          catch
+          {
+            Write-Output -InputObject ('Error File: {0}' -f $errorlog)
+            $null = $OldPath + $_.Exception.Message | Out-File -FilePath $errorlog -Append
+          }
+        }
+
+        foreach($RegKey in $Keys)
+        {
+          Write-Verbose -Message ('FolderKey = {0}' -f $FolderKey)
+          Write-Verbose -Message ('FolderName = {0}' -f $FolderName)
+          Write-Verbose -Message ('RegKey = {0}' -f $RegKey)
         
-        $LeafKey = Split-Path -Path $RegKey -Leaf
-        #$LeafKey = Split-Path -Path $Keys[0] -Leaf
-        $CurrentSettings = Get-ItemProperty -Path $RegKey -Name $FolderKey
-        $newlist = ('{2}: {0} = {1}' -f $FolderKey, $CurrentSettings.$FolderKey, $LeafKey)
-        Write-Verbose -Message $newlist
-        $CompareList += $newlist
+          $LeafKey = Split-Path -Path $RegKey -Leaf
+          #$LeafKey = Split-Path -Path $Keys[0] -Leaf
+          $CurrentSettings = Get-ItemProperty -Path $RegKey -Name $FolderKey
+          $newlist = ('{2}: {0} = {1}' -f $FolderKey, $CurrentSettings.$FolderKey, $LeafKey)
+          Write-Verbose -Message $newlist
+          $CompareList += $newlist
        
-        <# F8 Testing --
-            $Key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
-            Get-ItemProperty -Path $key
-        #>
+          <# F8 Testing --
+              $Key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+              Get-ItemProperty -Path $key
+          #>
 
 
-        # This is the command that actually makes changes to the Registry 
-        Set-ItemProperty -Path $RegKey -Name $FolderKey -Value $NewPath -WhatIf
+          # This is the command that actually makes changes to the Registry 
+          Set-ItemProperty -Path $RegKey -Name $FolderKey -Value $NewPath -WhatIf
+        }
       }
     }
-    
   }
-
-  END {
+  End 
+  {
     if(-not $Quiet)
     {
       $CompareList | Sort-Object
@@ -310,3 +312,4 @@ function Set-FolderRedirection
     Out-File -FilePath $resultlog
   }
 }
+
