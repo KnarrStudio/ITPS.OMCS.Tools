@@ -304,7 +304,7 @@ function Test-FiberSatellite
 }
 
 
-Test-FiberSatellite @TestSplat
+# Test-FiberSatellite @TestSplat
 
 
 # For Testing:

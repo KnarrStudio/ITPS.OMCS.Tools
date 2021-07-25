@@ -8,8 +8,6 @@
 
 # LOADING ALL FUNCTION DEFINITIONS:
 
-. $PSScriptRoot\Scripts\Get-FolderRedirection.ps1
-. $PSScriptRoot\Scripts\Set-FolderRedirection.ps1
 . $PSScriptRoot\Scripts\Add-NetworkPrinter.ps1
 . $PSScriptRoot\Scripts\Compare-Folders.ps1
 . $PSScriptRoot\Scripts\Get-InstalledSoftware.ps1
@@ -20,12 +18,11 @@
 . $PSScriptRoot\Scripts\Test-PrinterStatus.ps1
 . $PSScriptRoot\Scripts\Test-Replication.ps1
 . $PSScriptRoot\Scripts\Add-NetworkPrinter.ps1           
-. $PSScriptRoot\Scripts\Compare-Folders.ps1              
-. $PSScriptRoot\Scripts\Get-FolderRedirection.ps1        
+. $PSScriptRoot\Scripts\Compare-Folders.ps1       
 . $PSScriptRoot\Scripts\Get-InstalledSoftware.ps1        
 . $PSScriptRoot\Scripts\Get-SystemUpTime.ps1             
 . $PSScriptRoot\Scripts\New-TimeStampFileName.ps1        
-. $PSScriptRoot\Scripts\Set-FolderRedirection.ps1        
+. $PSScriptRoot\Scripts\FolderRedirection.ps1        
 . $PSScriptRoot\Scripts\Test-AdWorkstationConnections.ps1
 . $PSScriptRoot\Scripts\Test-FiberSatellite.ps1          
 . $PSScriptRoot\Scripts\Test-PrinterStatus.ps1           
