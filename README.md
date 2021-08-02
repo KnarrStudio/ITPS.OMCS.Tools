@@ -24,20 +24,20 @@ This is the ~~second~~ third go around of some tools.  The original idea was to 
 ### New Tools:
 * **Get-SystemUpTime** - This was build after users lieing or not understanding what a Reboot is.  
         It will give you the following: _ComputerName, LastBoot, TotalHours_ 
-* **Get-FolderRedirection** - Returns the location of the user's files.  This is a way to make sure there is nothing wrong with the folder redirection and they are saving to the HD.          
-* **Get-FolderRedirection** - Changeds the location of the user's files and copies them if needed.  This will make the changes in the HKCU registry to fix folder redirection. 
+* **Get-FolderRedirection** - _NEW_ Returns the location of the user's files.  This is a way to make sure there is nothing wrong with the folder redirection and they are saving to the HD.          
+* **Set-FolderRedirection** - _NEW_ Changes the location of the user's files and copies them if needed.  This will make the changes in the HKCU registry to fix folder redirection. 
 
 
 ```PowerShell 
 
-Test-FiberSatellite -Sites Value -Simple
+Import-Module -Scope Local # When using this as a normal user.
 
 ``` 
 
 ### Module Downloads:  
 
-Latest Version at [PowerShell Gallery](https://www.powershellgallery.com/packages/ITPS.OMCS.Tools/1.8.1)  
+Version 1.8.1 has been uploaded to the [PowerShell Gallery](https://www.powershellgallery.com/packages/ITPS.OMCS.Tools/1.8.1)  
 
-At [Github](https://github.com/KnarrStudio/ITPS.OMCS.Tools) 
+This current version 1.12.2.8 is only available at [Github](https://github.com/KnarrStudio/ITPS.OMCS.Tools) under the **Module Testing** branch.
 
 
