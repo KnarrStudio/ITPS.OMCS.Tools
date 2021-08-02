@@ -413,7 +413,7 @@ function Test-FiberSatellite
 {0}
 {2}
 {3}
-'@ -f $(f_$OutputTable.Report), ('-' * 31), ('You can find the full report at: {0}' -f $ReportFile), ('=' * 31))
+'@ -f $($OutputTable.Report), ('-' * 31), ('You can find the full report at: {0}' -f $ReportFile), ('=' * 31))
 
   $LogOutput | Add-Content -Path $ReportFile
     
