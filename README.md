@@ -3,7 +3,7 @@
 #### (No connection to the MIT OMCS project) 
 
 
-This is the ~~second~~ third go around of some tools.  The original idea was to create a series of tools that could be used by the desk side support tech. I found that some of the tasks that were being completed didn't need to have elevated rights, so I recreated this toolset to be run as the logged on users.  Now, months later and a better understanding of modules, Github and life overall, I have done some updates to the overall module and some changes to the code.I found that having to make sure the script was signed and had to "Run-As" an administrator.  Both of those were problems that I wanted to get around.  So, moving forward, although scripts will be signed, they will be designed so that you can run them as a normal user.   
+This is the ~~second~~ third go around of some tools.  The original idea was to create a series of tools that could be used by the desk side support tech. I found that some of the tasks that were being completed didn't need to have elevated rights, so I recreated this toolset to be run as the logged on users.  Now, months later and a better understanding of modules, Github and life overall, I have done some updates to the overall module and some changes to the code.  This also marks the beginning of work with Linux, so although not all of the modules will work with Linux, care is going into that OS.
 
 ### Original Toolset: 
 * **Add-NetworkPrinter** - _Unchanged_ You need to know the Print Server Name.  It will provide a list of printers that you are allowed to print to.   
