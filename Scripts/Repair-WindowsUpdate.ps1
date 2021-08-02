@@ -1,19 +1,5 @@
 ﻿function Repair-WindowsUpdate
 {
-  <#
-    .SYNOPSIS
-    Short Description
-    .DESCRIPTION
-    Detailed Description
-    .EXAMPLE
-    Repair-WindowsUpdate
-    explains how to use the command
-    can be multiple lines
-    .EXAMPLE
-    Repair-WindowsUpdate
-    another example
-    can have as many examples as you like
-  #>
   #requires -Version 3.0
   <#PSScriptInfo
     
