@@ -30,7 +30,7 @@ This is the ~~second~~ third go around of some tools.  The original idea was to 
 
 ```PowerShell 
 
-Import-Module -Scope Local # When using this as a normal user.
+Import-Module -Name ITPS.OMCS.Tools -Scope Local    # When using this as a normal user.
 
 ``` 
 
