@@ -13,3 +13,4 @@
 #. $PSScriptRoot\Modules\PrintersModule.psm1
 #. $PSScriptRoot\Modules\SystemInfoModule.psm1
 . $PSScriptRoot\Scripts\Test-SQLConnection.ps1
+. $PSScriptRoot\Scripts\Repair-WindowsUpdate.ps1
