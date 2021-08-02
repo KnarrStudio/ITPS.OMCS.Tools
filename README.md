@@ -8,6 +8,22 @@ This is the second go around of some tools.  The first was a bunch of scripts, t
 The original idea was to create a series of tools that could be used by the desk side support tech, but during testing I found that having to make sure the script was signed and had to "Run-As" an administrator.  Both of those were problems that I wanted to get around.  So, moving forward, although scripts will be signed, they will be designed so that you can run them as a normal user.   
 
 ### Tools: 
+         
+* _Get-SystemUpTime_             
+* _Get-InstalledSoftware_        
+* _Test-PrinterStatus_           
+* _Add-NetworkPrinter_           
+* _Test-SQLConnection_           
+* _Write-Report_                 
+* _Test-AdWorkstationConnections_
+* _Test-FiberSatellite_          
+* _Test-Replication_             
+* _Compare-Folders_              
+* _Set-FolderRedirection_        
+* _Get-FolderRedirection_        
+
+
+
 * **Add-NetworkPrinter** - This will help you add a printer to your workstation or server.  You need to know the Print Server Name. 
 * **Compare-Folders** - This allows you the ability to compare the files in two folders. 
 * **Get-InstalledSoftware** - This returns the version of the software named. 
