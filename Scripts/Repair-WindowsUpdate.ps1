@@ -3,103 +3,120 @@
   #requires -Version 3.0
   <#PSScriptInfo
     
-    .VERSION 1.0
+      .VERSION 1.0
     
-    .GUID ebdf766e-f61c-49a4-a764-1102ed0ac4dc
+      .GUID ebdf766e-f61c-49a4-a764-1102ed0ac4dc
     
-    .AUTHOR Erik@home
+      .AUTHOR Erik@home
     
-    .COMPANYNAME KnarrStudio
+      .COMPANYNAME KnarrStudio
     
-    .COPYRIGHT 2021 KnarrStudio
+      .COPYRIGHT 2021 KnarrStudio
     
-    .RELEASENOTES
-    Quick script to automate a manual process
+      .RELEASENOTES
+      Quick script to automate a manual process
     
   #>
   <#
-    .SYNOPSIS
-    Automates the steps used to repair Windows Updates. 
+      .SYNOPSIS
+      Automates the steps used to repair Windows Updates. 
     
-    .DESCRIPTION
-    Automates the steps used to repair Windows Updates. 
-    The steps can be found in the Advanced section of the "Troubleshoot problems updating Windows 10" page. See link
+      .DESCRIPTION
+      Automates the steps used to repair Windows Updates. 
+      The steps can be found in the Advanced section of the "Troubleshoot problems updating Windows 10" page. See link
     
-    PowerShells the following steps:
-    net.exe stop wuauserv 
-    net.exe stop cryptSvc 
-    net.exe stop bits 
-    net.exe stop msiserver 
-    ren C:\Windows\SoftwareDistribution -NewName SoftwareDistribution.old 
-    ren C:\Windows\System32\catroot2 -NewName Catroot2.old 
-    net.exe start wuauserv 
-    net.exe start cryptSvc 
-    net.exe start bits 
-    net.exe start msiserver 
-    
-    
-    .EXAMPLE
-    As an admin, run: Repair-WindowsUpdate
-    
-    .NOTES
+      PowerShells the following steps:
+      net.exe stop wuauserv 
+      net.exe stop cryptSvc 
+      net.exe stop bits 
+      net.exe stop msiserver 
+      ren C:\Windows\SoftwareDistribution -NewName SoftwareDistribution.old 
+      ren C:\Windows\System32\catroot2 -NewName Catroot2.old 
+      net.exe start wuauserv 
+      net.exe start cryptSvc 
+      net.exe start bits 
+      net.exe start msiserver 
     
     
-    .LINK
-    https://support.microsoft.com/help/4089834?ocid=20SMC10164Windows10
+      .EXAMPLE
+      As an admin, run: Repair-WindowsUpdate
+    
+      .NOTES
+    
+    
+      .LINK
+      https://support.microsoft.com/help/4089834?ocid=20SMC10164Windows10
     
   #>
+  BEGIN{
+    $asAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    $UpdateServices = 'wuauserv', 'cryptSvc', 'bits', 'msiserver'
+    $RenameFiles = "$env:windir\SoftwareDistribution", "$env:windir\System32\catroot2"
+    
+    function Set-ServiceState 
+    {
+      <#
+          .SYNOPSIS
+          Start or stop Services based on "Stop / Start" switch
+      #>
+      param(
+        [Parameter(Mandatory,HelpMessage = 'list of services that to stop or start')][string[]]$services,
+        [Switch]$Stop,
+        [Switch]$Start
+      )
+      if ($Stop)
+      {
+        ForEach ($service in $services)
+        {
+          try
+          {
+            Stop-Service -InputObject $service -PassThru
+          }
+          catch
+          {
+            Stop-Service -InputObject $service -Force
+          }
+        }
+      }
+      if ($Start)
+      {
+        ForEach ($service in $services)
+        {
+          Start-Service -InputObject $service
+        }
+      }
+    }
+    
+    function Rename-Files
+    {
+      <#
+          .SYNOPSIS
+          Renames files to ".old"
+      #>
+      param(
+        [Parameter(Mandatory,HelpMessage = 'list of files to be renamed with ".old"')][string[]]$Files
+      )
+      ForEach($File in $Files)
+      {
+        Rename-Item -Path $File -NewName ('{0}.old' -f $File) -Force
+      }
+    }
+  }
   
-  $UpdateServices = 'wuauserv', 'cryptSvc', 'bits', 'msiserver'
-  $RenameFiles = "$env:windir\SoftwareDistribution", "$env:windir\System32\catroot2"
-  function Set-ServiceState 
-  {
-    <#
-      .SYNOPSIS
-      Start or stop Services based on "Stop / Start" switch
-    #>
-    param(
-      [Parameter(Mandatory,HelpMessage = 'list of services that to stop or start')][string[]]$services,
-      [Switch]$Stop,
-      [Switch]$Start
-    )
-    if ($Stop)
+  PROCESS{
+    if ($asAdmin -eq $true)
     {
-      ForEach ($service in $services)
-      {
-        try
-        {
-          Stop-Service -InputObject $service -PassThru
-        }
-        catch
-        {
-          Stop-Service -InputObject $service -Force
-        }
-      }
+      Set-ServiceState -services $UpdateServices -Stop
+      Rename-Files -Files $RenameFiles
+      Set-ServiceState -services $UpdateServices -Start
     }
-    if ($Start)
+    else
     {
-      ForEach ($service in $services)
-      {
-        Start-Service -InputObject $service
-      }
+      Write-Host -Object '*** Re-run as an administrator ******' -ForegroundColor Black -BackgroundColor Yellow
     }
   }
-  function Rename-Files
-  {
-    <#
-      .SYNOPSIS
-      Renames files to ".old"
-    #>
-    param(
-      [Parameter(Mandatory,HelpMessage = 'list of files to be renamed with ".old"')][string[]]$Files
-    )
-    ForEach($File in $Files)
-    {
-      Rename-Item -Path $File -NewName ('{0}.old' -f $File) -Force
-    }
+
+  END{ 
   }
-  Set-ServiceState -services $UpdateServices -Stop
-  Rename-Files -Files $RenameFiles
-  Set-ServiceState -services $UpdateServices -Start
 }
 
