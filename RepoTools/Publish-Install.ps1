@@ -12,7 +12,7 @@ elseif(Test-Path -Path D:\GitHub\KnarrStudio)
 {
   $ModuleLocation = 'D:\GitHub\KnarrStudio\'
 }
-Set-Location -Path $ModuleLocation
+#Set-Location -Path $ModuleLocation
 
 $PublishSplat = @{
   Name       = ('{0}\{1}' -f $ModuleLocation, $ModuleName)
