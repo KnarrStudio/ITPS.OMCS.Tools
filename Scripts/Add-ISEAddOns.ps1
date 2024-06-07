@@ -1,53 +1,38 @@
-﻿
-# .Add("Title of Menu",{Scriptblock},"HotKeys 'Ctrl+Alt+B'")
+# Add "Title of Menu" with a script block and hotkeys 'Ctrl+Alt+B'
+# Import the ITPS-SelfHelp module
+# Initialize the Menu Object
+$MenuObject = $psISE.CurrentPowerShellTab.AddOnsMenu.Submenus.Add('Self Help', $null, $null)
 
-# Import-Module ITPS-SelfHelp
+# Define the Submenu Object
+$MenuObject.Submenus.Add('Test the Internet', {Test-TheInternet}, 'Ctrl+Alt+T')
+# $MenuObject.Submenus.Add('Convert IP Address to Binary', {Convert-IPAddresstoBinary}, $null)
+$MenuObject.Submenus.Add('Test Authentication Server', {Test-AuthenticationServer}, 'Ctrl+Alt+A')
 
-# Create the Menu Object
-$MenuObject = $psISE.CurrentPowerShellTab.AddOnsMenu.Submenus.Add('Self Help',$null,$null) 
-
-
-# Create the Submenu Object
-$MenuObject.Submenus.Add('Test the Internet',{Test-TheInternet},'Ctrl+Alt+T')  
-#$MenuObject.Submenus.Add('Convert IP Address to Binary',{Convert-IPAddresstoBinary},$null)
-$MenuObject.Submenus.Add('Test Authentication Server',{Test-AuthentationServer},'Ctrl+Alt+A')
-
-
-
-
-<#
-$MenuObject.Submenus.Add('Test the Internet',{
-    $env:USERPROFILE\Documents\GitHub\ITPS-SelfHelp\Scripts\Test-TheInternet.ps1
-},'Ctrl+Alt+T')   
-$MenuObject.Submenus.Add('Compare File Hash',{
-    . $env:USERPROFILE\Documents\GitHub\ITPS-SelfHelp\Scripts\Compare-FileHash.ps1
-},'Ctrl+Alt+F')
-$MenuObject.Submenus.Add('Test Authentication Server',{
-    $env:USERPROFILE\Documents\GitHub\ITPS-SelfHelp\Scripts\Test-AuthentationServer.ps1
-},'Ctrl+Alt+A')
-$MenuObject.Submenus.Add('Ping IP Range',{
-    . $env:USERPROFILE\Documents\GitHub\AssetManagentapp\Ping-IpRange.ps1
-},'Ctrl+Alt+P')
-#>
-
-
+# Uncomment to use scripts from user profile path
+# $MenuObject.Submenus.Add('Test the Internet', {
+#     . $env:USERPROFILE\Documents\GitHub\ITPS-SelfHelp\Scripts\Test-TheInternet.ps1
+# }, 'Ctrl+Alt+T')
+# $MenuObject.Submenus.Add('Compare File Hash', {
+#     . $env:USERPROFILE\Documents\GitHub\ITPS-SelfHelp\Scripts\Compare-FileHash.ps1
+# }, 'Ctrl+Alt+F')
+# $MenuObject.Submenus.Add('Test Authentication Server', {
+#     . $env:USERPROFILE\Documents\GitHub\ITPS-SelfHelp\Scripts\Test-AuthenticationServer.ps1
+# }, 'Ctrl+Alt+A')
+# $MenuObject.Submenus.Add('Ping IP Range', {
+#     . $env:USERPROFILE\Documents\GitHub\AssetManagementApp\Ping-IpRange.ps1
+# }, 'Ctrl+Alt+P')
 
 ########################################
-# Clear the Add-ons menu
-#$psISE.CurrentPowerShellTab.AddOnsMenu.SubMenus.Clear()
+# Clear the Add-ons menu if needed
+# $psISE.CurrentPowerShellTab.AddOnsMenu.SubMenus.Clear()
 
-# Create an AddOns menu with an accessor.
-# Note the use of "_"  as opposed to the "&" for mapping to the fast key letter for the menu item.
-#$menuAdded = $psISE.CurrentPowerShellTab.AddOnsMenu.SubMenus.Add('_Process', {Get-Process}, 'Alt+P')
+# Example to create an AddOns menu with an accessor
+# Note the use of "_" as opposed to "&" for mapping to the fast key letter for the menu item
+# $menuAdded = $psISE.CurrentPowerShellTab.AddOnsMenu.SubMenus.Add('_Process', {Get-Process}, 'Alt+P')
 
-# Add a nested menu.
-#$parentAdded = $psISE.CurrentPowerShellTab.AddOnsMenu.SubMenus.Add('Parent', $null, $null)
-#$parentAdded.SubMenus.Add('_Dir', {dir}, 'Alt+D')
+# Example to add a nested menu
+# $parentAdded = $psISE.CurrentPowerShellTab.AddOnsMenu.SubMenus.Add('Parent', $null, $null)
+# $parentAdded.SubMenus.Add('_Dir', {dir}, 'Alt+D')
 
-# Show the Add-ons menu on the current PowerShell tab.
-#$psISE.CurrentPowerShellTab.AddOnsMenu
-
-
-
-
-
+# Display the Add-ons menu on the current PowerShell tab
+# $psISE.CurrentPowerShellTab.AddOnsMenu
