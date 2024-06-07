@@ -48,75 +48,62 @@
       https://support.microsoft.com/help/4089834?ocid=20SMC10164Windows10
     
   #>
-  BEGIN{
+ BEGIN {
     $asAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     $UpdateServices = 'wuauserv', 'cryptSvc', 'bits', 'msiserver'
     $RenameFiles = "$env:windir\SoftwareDistribution", "$env:windir\System32\catroot2"
-    
-    function Set-ServiceState 
-    {
-      <#
-          .SYNOPSIS
-          Start or stop Services based on "Stop / Start" switch
-      #>
-      param(
-        [Parameter(Mandatory,HelpMessage = 'list of services that to stop or start')][string[]]$services,
-        [Switch]$Stop,
-        [Switch]$Start
-      )
-      if ($Stop)
-      {
-        ForEach ($service in $services)
-        {
-          try
-          {
-            Stop-Service -InputObject $service -PassThru
-          }
-          catch
-          {
-            Stop-Service -InputObject $service -Force
-          }
-        }
-      }
-      if ($Start)
-      {
-        ForEach ($service in $services)
-        {
-          Start-Service -InputObject $service
-        }
-      }
-    }
-    
-    function Rename-Files
-    {
-      <#
-          .SYNOPSIS
-          Renames files to ".old"
-      #>
-      param(
-        [Parameter(Mandatory,HelpMessage = 'list of files to be renamed with ".old"')][string[]]$Files
-      )
-      ForEach($File in $Files)
-      {
-        Rename-Item -Path $File -NewName ('{0}.old' -f $File) -Force
-      }
-    }
-  }
-  
-  PROCESS{
-    if ($asAdmin -eq $true)
-    {
-      Set-ServiceState -services $UpdateServices -Stop
-      Rename-Files -Files $RenameFiles
-      Set-ServiceState -services $UpdateServices -Start
-    }
-    else
-    {
-      Write-Host -Object '*** Re-run as an administrator ******' -ForegroundColor Black -BackgroundColor Yellow
-    }
-  }
 
-  END{ 
-  }
+    function Set-ServiceState {
+        <#
+            .SYNOPSIS
+            Starts or stops services based on the "Stop / Start" switch.
+        #>
+        param(
+            [Parameter(Mandatory, HelpMessage = 'List of services to stop or start.')][string[]]$services,
+            [Switch]$Stop,
+            [Switch]$Start
+        )
+        if ($Stop) {
+            foreach ($service in $services) {
+                try {
+                    Stop-Service -Name $service -PassThru
+                } catch {
+                    Stop-Service -Name $service -Force
+                }
+            }
+        }
+        if ($Start) {
+            foreach ($service in $services) {
+                Start-Service -Name $service
+            }
+        }
+    }
+
+    function Rename-Files {
+        <#
+            .SYNOPSIS
+            Renames files by appending ".old" to their names.
+        #>
+        param(
+            [Parameter(Mandatory, HelpMessage = 'List of files to be renamed with ".old".')][string[]]$Files
+        )
+        foreach ($File in $Files) {
+            Rename-Item -Path $File -NewName ("$File.old") -Force
+        }
+    }
+}
+
+PROCESS {
+    if ($asAdmin) {
+        Set-ServiceState -services $UpdateServices -Stop
+        Rename-Files -Files $RenameFiles
+        Set-ServiceState -services $UpdateServices -Start
+    } else {
+        Write-Host '*** Please re-run as an administrator ***' -ForegroundColor Black -BackgroundColor Yellow
+    }
+}
+
+END { 
+}
 }
 
