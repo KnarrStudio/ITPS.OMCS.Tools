@@ -12,7 +12,8 @@
 . $PSScriptRoot\Scripts\Compare-Folders.ps1
 . $PSScriptRoot\Scripts\Get-InstalledSoftware.ps1 # removed: function deleted
 . $PSScriptRoot\Scripts\Get-SystemUpTime.ps1
-. $PSScriptRoot\Scripts\New-TimeStampFileName.ps1
+# New-TimeStampFileName was moved into Modules\LoggingModule.psm1
+# Use `Import-Module "$PSScriptRoot\Modules\LoggingModule.psm1"` to load it when needed
 . $PSScriptRoot\Scripts\Repair-FolderRedirection.ps1
 . $PSScriptRoot\Scripts\Test-AdWorkstationConnections.ps1
 . $PSScriptRoot\Scripts\Test-FiberSatellite.ps1 # archived: see Modules\_Archived\Test-FiberSatellite.psm1
