@@ -165,14 +165,18 @@ function Test-FiberSatellite
 
   ForEach ($site in $Sites)  
   {
+    # Log the start of the ping for this site
     Write-Verbose -Message ('Line {0}:  {1}' -f $(Get-CurrentLineNumber), $VerboseMsg.1)
-        
+    
+    # Perform the initial ping test
     $PingReply = Test-NetConnection -ComputerName $site 
     
+    # Extract round trip time and ping success status
     $RoundTripTime = $PingReply.PingReplyDetails.RoundtripTime
     $PingSucceded = $PingReply.PingSucceeded
     Write-Verbose -Message ('Line {0}:  {1}' -f $(Get-CurrentLineNumber), $VerboseMsg.1)
     
+    # If ping succeeded but round trip time is 0, try again (sometimes first ping is a false zero)
     if(($PingSucceded -eq $true) -and ($RoundTripTime -eq 0))
     {
       $PingReply = Test-NetConnection -ComputerName $site 
@@ -181,21 +185,25 @@ function Test-FiberSatellite
       $PingSucceded = $PingReply.PingSucceeded
     }
  
+    # Add this site's round trip time to the total
     $RttTotal += $RoundTripTime
     Write-Verbose -Message ('Line {0}:  {1}' -f $(Get-CurrentLineNumber), $VerboseMsg.1)
 
+    # If the ping failed, decrement the response count and increment the failure count
     if($PingSucceded -eq $false)
     {
       $TotalResponses = $TotalResponses - 1
       $NotRight ++
     }
-      
+    
+    # Prepare output message for this site
     $OutputMessage = 'Output Message'
     ('{0} - RoundTripTime is {1} ms.' -f $PingReply.Computername, $RoundTripTime) | Tee-Object -FilePath $ReportFile -Append
     Write-Verbose  -Message $OutputMessage
     $ReportList += $OutputMessage
   }
    
+  # Store the last site's round trip time in the PingStat hashtable
   $PingStat[$site] = [string]$RoundTripTime
 
 

@@ -1,0 +1,1 @@
+$Sites = ('LocalServer', 'localhost', 'www.google.com', 'www.bing.com', 'www.wolframalpha.com', 'www.yahoo.com')

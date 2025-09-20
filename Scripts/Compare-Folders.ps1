@@ -12,10 +12,8 @@
 
       .PARAMETER SecondFolder
       The Destination -SecondFolder.
-
   #>
     
-
   [Cmdletbinding()]
   
   Param
@@ -23,7 +21,7 @@
     [Parameter(Mandatory, Position = 0,ValueFromPipeline, ValueFromPipelineByPropertyName)] [Alias('Source','OldFolder')]
     [string]$FirstFolder,
     [Parameter(Mandatory=$False)][Alias('Destination','Staging')]
-  [string]$SecondFolder = $null  )
+	[string]$SecondFolder = $null  )
 
   function Get-FolderStats
   {
