@@ -7,9 +7,9 @@ function New-TimeStampFile
     [Parameter(Mandatory=$false,HelpMessage='Extension of file. txt, csv, log')]
     [alias('Extension')]
     [String]$FileType = 'log',
-    [Parameter(Mandatory,HelpMessage='Formatting Choice 1 to 4')]
-    [ValidateRange(1,4)]
-    [int]$StampFormat = 2,
+  [Parameter(Mandatory=$false,HelpMessage='Formatting Choice 1 to 4')]
+  [ValidateRange(1,4)]
+  [int]$StampFormat = 2,
     [Parameter(ValueFromPipeline,HelpMessage='Folder Path')]
     [AllowNull()]
     [String]$ReportFolder
