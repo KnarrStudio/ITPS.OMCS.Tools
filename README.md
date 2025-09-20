@@ -8,7 +8,7 @@ This is the second go around of some tools.  The first was a bunch of scripts, t
 The original idea was to create a series of tools that could be used by the desk side support tech, but during testing I found that having to make sure the script was signed and had to "Run-As" an administrator.  Both of those were problems that I wanted to get around.  So, moving forward, although scripts will be signed, they will be designed so that you can run them as a normal user.   
 
 ### Tools: 
-* **Add-NetworkPrinter** - This will help you add a printer to your workstation or server.  You need to know the Print Server Name. 
+* **Add-NetworkPrinter** - (Archived) This would help add a printer; archived implementation at `Scripts\_Archived\Add-NetworkPrinter.ps1` and `Modules\_Archived\Add-NetworkPrinter.psm1`.
 * **Compare-Folders** - This allows you the ability to compare the files in two folders. 
 * **Get-InstalledSoftware** - (Archived) This returns the version of the software named. See `Scripts\_Archived\Get-InstalledSoftware.ps1` for the archived implementation.
 * **New-TimedStampFileName** - One of my original funtions.  It just spits out a file name with a time stamp. 

@@ -19,7 +19,7 @@ ModuleVersion = '{0}.{1}.{2}.{3}' -f $Major,$minor,$Patch,$Manifest
 Description = 'IT PowerShell tools for the Open Minded Common Sense tech'
 PowerShellVersion = '3.0'
 NestedModules = @('Modules\ConnectionsModule.psm1', 'Modules\FoldersModule.psm1', 'Modules\PrintersModule.psm1', 'Modules\SystemInfoModule.psm1')
-FunctionsToExport = 'Repair-WindowsUpdate','Get-SystemUpTime', 'Test-PrinterStatus', 'Add-NetworkPrinter', 'Test-SQLConnection', 'Write-Report', 'Test-AdWorkstationConnections', 'Test-Replication', 'Compare-Folders', 'Set-FolderRedirection', 'Get-FolderRedirection'#CmdletsToExport = '*'
+FunctionsToExport = 'Repair-WindowsUpdate','Get-SystemUpTime', 'Test-PrinterStatus', 'Test-SQLConnection', 'Write-Report', 'Test-AdWorkstationConnections', 'Test-Replication', 'Compare-Folders', 'Set-FolderRedirection', 'Get-FolderRedirection'#CmdletsToExport = '*'
 #ModuleList = '.\ITPS.OMCS.CodingFunctions.psm1'
 ReleaseNotes = 'Fixing the manifest update script'
 }
