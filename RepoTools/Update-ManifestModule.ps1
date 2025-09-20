@@ -13,13 +13,20 @@ $SplatSettings = @{
 Path = '{0}\{1}.psd1' -f $((get-item (Get-Location).Path).Parent.FullName), $((get-item (Get-Location).Path).Parent.Name)
 RootModule = '.\loader.psm1'
 Guid = "$(New-Guid)"
-Author = 'Erik' 
+Author = 'Erik'
 CompanyName = 'Knarr Studio'
 ModuleVersion = '{0}.{1}.{2}.{3}' -f $Major,$minor,$Patch,$Manifest
 Description = 'IT PowerShell tools for the Open Minded Common Sense tech'
 PowerShellVersion = '3.0'
-NestedModules = @('Modules\ConnectionsModule.psm1', 'Modules\FoldersModule.psm1', 'Modules\PrintersModule.psm1', 'Modules\SystemInfoModule.psm1', 'Modules\LoggingModule.psm1')
-FunctionsToExport = 'Repair-WindowsUpdate','Get-SystemUpTime', 'Test-PrinterStatus', 'Write-Report', 'Test-AdWorkstationConnections', 'Test-Replication', 'Compare-Folders', 'Set-FolderRedirection', 'Get-FolderRedirection', 'New-TimeStampFile', 'Write-CsvReport', 'Write-ReportLog'#CmdletsToExport = '*'
+NestedModules = @(Get-ChildItem -Path (Join-Path $PSScriptRoot '..\Modules') -Filter '*.psm1' | ForEach-Object { "Modules\\$($_.Name)" })
+FunctionsToExport = @(Get-ChildItem -Path (Join-Path $PSScriptRoot '..\Modules') -Filter '*.psm1' | ForEach-Object {
+	# Simple heuristic: parse exported function names from each module file
+	$content = Get-Content $_.FullName -ErrorAction SilentlyContinue
+	($content | Select-String -Pattern 'Export-ModuleMember -Function' -SimpleMatch | ForEach-Object {
+		($_ -split '-Function')[1] -replace '[^A-Za-z0-9, _-]', '' -replace '\\s+', ' '
+	})
+} | Where-Object { $_ } | ForEach-Object { ($_ -split ',') } | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' } | Sort-Object -Unique)
+#CmdletsToExport = '*'
 #ModuleList = '.\ITPS.OMCS.CodingFunctions.psm1'
 ReleaseNotes = 'Fixing the manifest update script'
 }

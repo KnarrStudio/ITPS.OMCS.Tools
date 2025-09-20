@@ -67,13 +67,21 @@ RequiredModules = @('NetTCPIP',
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @('Modules\LoggingModule.psm1')
+NestedModules = @('Modules\ConnectionsModule.psm1', 'Modules\FoldersModule.psm1', 'Modules\PrintersModule.psm1', 'Modules\SystemInfoModule.psm1', 'Modules\LoggingModule.psm1')
 
-# Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Compare-Folders', 
-               'Get-SystemUpTime', 'New-TimeStampFile', 'New-TimeStampFileName', 
-               'Repair-FolderRedirection', 'Test-AdWorkstationConnections', 
-               'Test-PrinterStatus', 'Test-Replication'
+# Functions to export from this module (maintain manually to avoid execution during module import)
+FunctionsToExport = @(
+    'Compare-Folders',
+    'Get-SystemUpTime',
+    'New-TimeStampFile',
+    'New-TimeStampFileName',
+    'Repair-FolderRedirection',
+    'Test-AdWorkstationConnections',
+    'Test-PrinterStatus',
+    'Test-Replication',
+    'Write-CsvReport',
+    'Write-ReportLog'
+)
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = '*'
