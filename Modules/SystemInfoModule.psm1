@@ -1,18 +1,4 @@
-﻿function Get-InstalledSoftware
-{
-  <#
-    Archived/disabled stub for Get-InstalledSoftware
-
-    The full implementation was moved to `Modules\_Archived\Get-InstalledSoftware.psm1`.
-    If you need to restore the command, copy the archived implementation back
-    into this module or dot-source the archived file.
-  #>
-
-  [CmdletBinding()]
-  Param()
-
-  Write-Warning 'Get-InstalledSoftware is archived. See Modules\_Archived\Get-InstalledSoftware.psm1 for the original implementation.'
-}
+﻿...existing code...
 
 function Get-SystemUpTime
 {

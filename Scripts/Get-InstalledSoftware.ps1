@@ -1,8 +1,8 @@
-﻿# Archived stub for Get-InstalledSoftware
-# The full implementation has been moved to `Scripts\_Archived\Get-InstalledSoftware.ps1` and
-# the module-level implementation was archived to `Modules\_Archived\Get-InstalledSoftware.psm1`.
-
-Write-Warning 'Get-InstalledSoftware is archived. See Scripts\_Archived\Get-InstalledSoftware.ps1 for the archived implementation.'
+﻿<#
+	Removed: Get-InstalledSoftware
+	This file was removed from the active codebase by request on 2025-09-20.
+	The implementation is no longer present in this repository.
+#>
 
 
 #

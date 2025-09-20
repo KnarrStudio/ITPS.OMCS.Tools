@@ -8,9 +8,9 @@
 
 # LOADING ALL FUNCTION DEFINITIONS:
 
-. $PSScriptRoot\Scripts\Add-NetworkPrinter.ps1 # archived: see Scripts\_Archived\Add-NetworkPrinter.ps1
+. $PSScriptRoot\Scripts\Add-NetworkPrinter.ps1 # removed: function deleted
 . $PSScriptRoot\Scripts\Compare-Folders.ps1
-. $PSScriptRoot\Scripts\Get-InstalledSoftware.ps1 # archived: see Scripts\_Archived\Get-InstalledSoftware.ps1
+. $PSScriptRoot\Scripts\Get-InstalledSoftware.ps1 # removed: function deleted
 . $PSScriptRoot\Scripts\Get-SystemUpTime.ps1
 . $PSScriptRoot\Scripts\New-TimeStampFileName.ps1
 . $PSScriptRoot\Scripts\Repair-FolderRedirection.ps1
