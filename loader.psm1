@@ -11,13 +11,15 @@
 . $PSScriptRoot\Scripts\Add-NetworkPrinter.ps1 # removed: function deleted
 . $PSScriptRoot\Scripts\Compare-Folders.ps1
 . $PSScriptRoot\Scripts\Get-InstalledSoftware.ps1 # removed: function deleted
-. $PSScriptRoot\Scripts\Get-SystemUpTime.ps1
+# `Get-SystemUpTime` now provided by `Modules\SystemInfoModule.psm1`
+# Use `Import-Module "$PSScriptRoot\Modules\SystemInfoModule.psm1"` to load it when needed
 # New-TimeStampFileName was moved into Modules\LoggingModule.psm1
 # Use `Import-Module "$PSScriptRoot\Modules\LoggingModule.psm1"` to load it when needed
 . $PSScriptRoot\Scripts\Repair-FolderRedirection.ps1
 . $PSScriptRoot\Scripts\Test-AdWorkstationConnections.ps1
 . $PSScriptRoot\Scripts\Test-FiberSatellite.ps1 # archived: see Modules\_Archived\Test-FiberSatellite.psm1
-. $PSScriptRoot\Scripts\Test-PrinterStatus.ps1
+# `Test-PrinterStatus` now provided by `Modules\PrintersModule.psm1`
+# Use `Import-Module "$PSScriptRoot\Modules\PrintersModule.psm1"` to load it when needed
 . $PSScriptRoot\Scripts\Test-Replication.ps1
 
 # SIG # Begin signature block
