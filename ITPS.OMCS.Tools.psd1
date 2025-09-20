@@ -70,10 +70,10 @@ RequiredModules = @('NetTCPIP',
 NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Add-NetworkPrinter', 'Compare-Folders', 'Get-InstalledSoftware', 
+FunctionsToExport = 'Add-NetworkPrinter', 'Compare-Folders', 
                'Get-SystemUpTime', 'New-TimeStampFileName', 
                'Repair-FolderRedirection', 'Test-AdWorkstationConnections', 
-               'Test-FiberSatellite', 'Test-PrinterStatus', 'Test-Replication'
+               'Test-PrinterStatus', 'Test-Replication'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = '*'

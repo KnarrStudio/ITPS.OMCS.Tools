@@ -16,7 +16,10 @@ function Start-DailyChecks
     can have as many examples as you like
   #>
   Clear-Host
-  Test-FiberSatellite -Sites www.yahoo.com
+  # Test-FiberSatellite was archived. See Modules\_Archived\Test-FiberSatellite.psm1
+  # If you need to run the archived implementation, dot-source the archived file:
+  # . $PSScriptRoot\Modules\_Archived\Test-FiberSatellite.psm1
+  # Test-FiberSatellite -Sites www.yahoo.com
   Test-PrinterStatus -PrintServer Printserver -PingReportFolder \\fileshare
   Test-AdWorkstationConnections -ADSearchBase xxx -PingReportFolder \\fileshare -OutputFileName WorkstationReport
   Import-Csv -Path WorkstationList | Get-SystemUpTime -ShowOfflineComputers -DisplayOnly

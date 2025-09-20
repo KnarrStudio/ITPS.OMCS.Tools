@@ -10,12 +10,12 @@
 
 . $PSScriptRoot\Scripts\Add-NetworkPrinter.ps1
 . $PSScriptRoot\Scripts\Compare-Folders.ps1
-. $PSScriptRoot\Scripts\Get-InstalledSoftware.ps1
+. $PSScriptRoot\Scripts\Get-InstalledSoftware.ps1 # archived: see Scripts\_Archived\Get-InstalledSoftware.ps1
 . $PSScriptRoot\Scripts\Get-SystemUpTime.ps1
 . $PSScriptRoot\Scripts\New-TimeStampFileName.ps1
 . $PSScriptRoot\Scripts\Repair-FolderRedirection.ps1
 . $PSScriptRoot\Scripts\Test-AdWorkstationConnections.ps1
-. $PSScriptRoot\Scripts\Test-FiberSatellite.ps1
+. $PSScriptRoot\Scripts\Test-FiberSatellite.ps1 # archived: see Modules\_Archived\Test-FiberSatellite.psm1
 . $PSScriptRoot\Scripts\Test-PrinterStatus.ps1
 . $PSScriptRoot\Scripts\Test-Replication.ps1
 

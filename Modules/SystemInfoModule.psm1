@@ -1,320 +1,160 @@
-﻿Function Get-InstalledSoftware
+﻿function Get-InstalledSoftware
 {
   <#
-      .SYNOPSIS
-      "Get-InstalledSoftware" collects all the software listed in the Uninstall registry.
+    Archived/disabled stub for Get-InstalledSoftware
 
-      .DESCRIPTION
-      Add a more complete description of what the function does.
-
-      .PARAMETER SortList
-      Allows you to sort by Name, Installed Date or Version Number.  'InstallDate' or 'DisplayName' or 'DisplayVersion'
-
-      .PARAMETER SoftwareName
-      This wil provide the installed date, version, and name of the software in the "value".  You can use part of a name or two words, but they must be in quotes.  Mozil or "Mozilla Firefox"
-
-      .PARAMETER File
-      Future Use:  Will be used to send to a file instead of the screen. 
-
-      .EXAMPLE
-      Get-InstalledSoftware -SortList DisplayName
-
-      InstallDate  DisplayVersion   DisplayName 
-      -----------  --------------   -----------
-      20150128     6.1.1600.0       Windows MultiPoint Server Log Collector 
-      02/06/2007   3.1              Windows Driver Package - Silicon Labs Software (DSI_SiUSBXp_3_1) USB  (02/06/2007 3.1) 
-      07/25/2013   10.30.0.288      Windows Driver Package - Lenovo (WUDFRd) LenovoVhid  (07/25/2013 10.30.0.288)
-
-
-      .EXAMPLE
-      Get-InstalledSoftware -SoftwareName 'Mozilla Firefox',Green,vlc 
-
-      Installdate  DisplayVersion  DisplayName                     
-      -----------  --------------  -----------                     
-      69.0            Mozilla Firefox 69.0 (x64 en-US)
-      20170112     1.2.9.112       Greenshot 1.2.9.112             
-      2.1.5           VLC media player  
-
-      .NOTES
-      Place additional notes here.
-
-      .LINK
-      https://github.com/KnarrStudio/ITPS.OMCS.Tools
-
-
-      .OUTPUTS
-      To the screen until the File parameter is working
-
+    The full implementation was moved to `Modules\_Archived\Get-InstalledSoftware.psm1`.
+    If you need to restore the command, copy the archived implementation back
+    into this module or dot-source the archived file.
   #>
 
-  [cmdletbinding(DefaultParameterSetName = 'SortList',SupportsPaging = $true)]
-  Param(
-    
-    [Parameter(Mandatory = $true,HelpMessage = 'At least part of the software name to test', Position = 0,ParameterSetName = 'SoftwareName')]
-    [String[]]$SoftwareName,
-    [Parameter(ParameterSetName = 'SortList')]
-    [Parameter(ParameterSetName = 'SoftwareName')]
-    [ValidateSet('DateInstalled', 'DisplayName','DisplayVersion')] 
-    [String]$SortList = 'DateInstalled'
-    
-  )
-  
-  Begin { 
-    $SoftwareOutput = @()
-    $InstalledSoftware = (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*)
-  }
-  
-  Process {
-    Try 
-    {
-      if($SoftwareName -eq $null) 
-      {
-        $SoftwareOutput = $InstalledSoftware |
-        #Sort-Object -Descending -Property $SortList |
-        Select-Object -Property @{
-          Name = 'DateInstalled'
-          Exp  = {
-            $_.InstallDate
-          }
-        }, @{
-          Name = 'Version'
-          Exp  = {
-            $_.DisplayVersion
-          }
-        }, DisplayName #, UninstallString 
-      }
-      Else 
-      {
-        foreach($Item in $SoftwareName)
-        {
-          $SoftwareOutput += $InstalledSoftware |
-          Where-Object -Property DisplayName -Match -Value $SoftwareName|
-          Select-Object -Property @{
-            Name = 'DateInstalled'
-            Exp  = {
-              $_.InstallDate
-            }
-          }, @{
-            Name = 'Version'
-            Exp  = {
-              $_.DisplayVersion
-            }
-          }, DisplayName #, UninstallString 
-        }
-      }
-    }
-    Catch 
-    {
-      # get error record
-      [Management.Automation.ErrorRecord]$e = $_
+  [CmdletBinding()]
+  Param()
 
-      # retrieve information about runtime error
-      $info = New-Object -TypeName PSObject -Property @{
-        Exception = $e.Exception.Message
-        Reason    = $e.CategoryInfo.Reason
-        Target    = $e.CategoryInfo.TargetName
-        Script    = $e.InvocationInfo.ScriptName
-        Line      = $e.InvocationInfo.ScriptLineNumber
-        Column    = $e.InvocationInfo.OffsetInLine
-      }
-      
-      # output information. Post-process collected info, and log info (optional)
-      $info
-    }
-  }
-  
-  End{ 
-    Switch ($SortList){
-      'DisplayName' 
-      {
-        $SoftwareOutput |
-        Sort-Object -Property 'displayname'
-      }
-      'DisplayVersion' 
-      {
-        $SoftwareOutput |
-        Sort-Object -Property 'Version'
-      }
-      'UninstallString'
-      {
-
-      }
-      'DateInstalled'  
-      {
-        $SoftwareOutput |
-        Sort-Object -Property 'DateInstalled' 
-      } 
-      default  
-      {
-        $SoftwareOutput |
-        Sort-Object -Property 'DateInstalled'
-      } #'InstallDate'
-      
-    }
-  }
+  Write-Warning 'Get-InstalledSoftware is archived. See Modules\_Archived\Get-InstalledSoftware.psm1 for the original implementation.'
 }
 
 function Get-SystemUpTime
 {
-  <#PSScriptInfo
+  <#
+  .SYNOPSIS
+  Get system last boot time and uptime for local or remote computers.
 
-      .VERSION 1.7
+  .DESCRIPTION
+  Returns the last boot time and total uptime (in hours) for one or many
+  computers. The function supports querying by ComputerName (remote or local)
+  or by an existing CimSession. Output can be written to the pipeline and
+  optionally exported to CSV.
 
-      .GUID 4f5d3d64-7d6e-407e-a902-cdbc1b6175cd
+  .PARAMETER ComputerName
+  One or many DNS/NetBIOS computer names. Defaults to the local computer.
 
-      .AUTHOR Erik
+  .PARAMETER CimSession
+  One or many CimSession objects. When provided, CimSession is used instead
+  of ComputerName.
 
-      .COMPANYNAME KnarrStudio
+  .PARAMETER ShowOfflineComputers
+  When specified, the cmdlet will include an errors section listing
+  computers/sessions that failed to respond.
 
-      .COPYRIGHT
+  .PARAMETER BootOnly
+  Only return the computer name and last boot time (omit TotalHours).
 
-      .TAGS
+  .PARAMETER FileOnly
+  When specified, results are written to the CSV file only (but also
+  emitted to the pipeline). See OutCsv for the path.
 
-      .LICENSEURI
+  .PARAMETER OutCsv
+  Path to the CSV file used when -FileOnly is specified. Defaults to
+  "$env:TEMP\UpTime.csv".
 
-      .PROJECTURI https://knarrstudio.github.io/ITPS.OMCS.Tools/
+  .EXAMPLE
+  Get-SystemUpTime -ComputerName Server01,Server02
 
-      .ICONURI
+  .EXAMPLE
+  $s = New-CimSession -ComputerName Server01
+  Get-SystemUpTime -CimSession $s -ShowOfflineComputers
 
-      .EXTERNALMODULEDEPENDENCIES 
-
-      .REQUIREDSCRIPTS
-
-      .EXTERNALSCRIPTDEPENDENCIES
-
-      .RELEASENOTES
-
-
-      .PRIVATEDATA
-
+  .NOTES
+  Uses Get-CimInstance for modern CIM/WMI access and works across remote
+  sessions or by computer name. Maintains backward-compatible output shape.
   #>
 
-  <# 
-      .SYNOPSIS
-      Returns the last boot time and uptime in hours for one or many computers
-    
-      .DESCRIPTION 
-      Returns system uptime
-    
-      .PARAMETER ComputerName
-      One or Many Computers
-    
-      .PARAMETER ShowOfflineComputers
-      Returns a list of the computers that did not respond.
-    
-      .EXAMPLE
-      Get-UpTime -ComputerName Value -ShowOfflineComputers
-      Returns the last boot time and uptime in hours of the list of computers in "value" and lists the computers that did not respond
-    
-      .OUTPUTS
-      ComputerName LastBoot           TotalHours       
-      ------------ --------           ----------       
-      localhost    10/9/2019 00:09:28 407.57           
-      tester       Unable to Connect  Error Shown Below
-    
-      Errors for Computers not able to connect.
-      tester Error: The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)
-  #>
-  
   [cmdletbinding(DefaultParameterSetName = 'DisplayOnly')]
   Param (
-    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName,Position = 0)]
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName,Position = 0,ParameterSetName='ByName')]
     [Alias('hostname')]
     [string[]]$ComputerName = $env:COMPUTERNAME,
+
+    [Parameter(ParameterSetName = 'ByCimSession')]
+    [CimSession[]]$CimSession,
+
     [Parameter (ParameterSetName = 'DisplayOnly')]
     [Switch]$ShowOfflineComputers,
-    <# [Parameter (ParameterSetName = 'DisplayOnly')]
-    [Switch]$DisplayOnly,#>
+
     [Parameter (ParameterSetName = 'DisplayOnly')]
     [Switch]$BootOnly,
+
     [Parameter (ParameterSetName = 'FileOnly')]
     [Switch]$FileOnly,
+
     [Parameter (ParameterSetName = 'FileOnly')]
-    [String]$OutCsv = "$env:HOMEDRIVE\Temp\UpTime.csv"
+    [String]$OutCsv = (Join-Path -Path $env:TEMP -ChildPath 'UpTime.csv')
   )
-  
+
   BEGIN {
     $ErroredComputers = @()
-    if($BootOnly)
-    {
-      $SelectObjects = 'ComputerName', 'LastBoot'
-    }
-    else
-    {
-      $SelectObjects = 'ComputerName', 'LastBoot', 'TotalHours'
-    }
-    if($DisplayOnly)
-    {
-      $OutCsv = $null
-    }
-    if($FileOnly)
-    {
-      if (Test-Path -Path $OutCsv)
-      {
-        $i = 1
-        $NewFileName = $OutCsv.Trim('.csv')
-        Do 
-        {
-          $OutCsv = ('{0}({1}).csv' -f $NewFileName, $i)
-          $i++
-        }while (Test-Path -Path $OutCsv)
-      }
+    if ($BootOnly) { $SelectObjects = 'ComputerName','LastBoot' }
+    else { $SelectObjects = 'ComputerName','LastBoot','TotalHours' }
+
+    if ($FileOnly -and (Test-Path -Path $OutCsv)) {
+      $i = 1
+      $base = [IO.Path]::ChangeExtension($OutCsv, $null)
+      do {
+        $OutCsv = ('{0}({1}).csv' -f $base, $i)
+        $i++
+      } while (Test-Path -Path $OutCsv)
     }
   }
-  
+
   PROCESS {
-    Foreach ($Computer in $ComputerName) 
-    {
-      Try 
-      {
-        $OS = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $Computer -ErrorAction Stop
+    if ($CimSession) { $Targets = $CimSession } else { $Targets = $ComputerName }
+
+    foreach ($target in $Targets) {
+      $Object = $null
+      try {
+        if ($CimSession) {
+          $OS = Get-CimInstance -ClassName Win32_OperatingSystem -CimSession $target -ErrorAction Stop
+          $Computer = ($target | Select-Object -ExpandProperty ComputerName -ErrorAction SilentlyContinue) -or $OS.__SERVER -or $target
+        }
+        else {
+          $OS = Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName $target -ErrorAction Stop
+          $Computer = $target
+        }
+
         $UpTime = (Get-Date) - $OS.ConvertToDateTime($OS.LastBootUpTime)
         $Properties = @{
           ComputerName = $Computer
           LastBoot     = $OS.ConvertToDateTime($OS.LastBootUpTime)
-          TotalHours   = ( '{0:n2}' -f $UpTime.TotalHours)
+          TotalHours   = ('{0:n2}' -f $UpTime.TotalHours)
         }
-        
-        $Object = New-Object -TypeName PSObject -Property $Properties | Select-Object -Property $SelectObjects
+
+        $Object = [PSCustomObject]$Properties | Select-Object -Property $SelectObjects
       }
-      catch 
-      {
-        if ($ShowOfflineComputers) 
-        {
-          $ErrorMessage = ('{0} Error: {1}' -f $Computer, $_.Exception.Message)
+      catch {
+        if ($ShowOfflineComputers) {
+          $name = if ($CimSession) { ($target | Select-Object -ExpandProperty ComputerName -ErrorAction SilentlyContinue) -or $target } else { $target }
+          $ErrorMessage = ('{0} Error: {1}' -f $name, $_.Exception.Message)
           $ErroredComputers += $ErrorMessage
-          
+
           $Properties = @{
-            ComputerName = $Computer
+            ComputerName = $name
             LastBoot     = 'Unable to Connect'
             TotalHours   = 'Error Shown Below'
           }
-          
-          $Object = New-Object -TypeName PSObject -Property $Properties | Select-Object -Property $SelectObjects
+
+          $Object = [PSCustomObject]$Properties | Select-Object -Property $SelectObjects
         }
       }
-      finally 
-      {
-        if($FileOnly)
-        {
+      finally {
+        if ($FileOnly -and $Object) {
           $Object | Export-Csv -Path $OutCsv -Append -NoTypeInformation
           Write-Verbose -Message ('Output located {0}' -f $OutCsv)
         }
-        
-        Write-Output -InputObject $Object
-        
-        $Object       = $null
-        $OS           = $null
-        $UpTime       = $null
-        $ErrorMessage = $null
-        $Properties   = $null
+
+        if ($Object) { Write-Output -InputObject $Object }
+
+        Remove-Variable -Name Object -ErrorAction SilentlyContinue
+        Remove-Variable -Name OS -ErrorAction SilentlyContinue
+        Remove-Variable -Name UpTime -ErrorAction SilentlyContinue
+        Remove-Variable -Name ErrorMessage -ErrorAction SilentlyContinue
+        Remove-Variable -Name Properties -ErrorAction SilentlyContinue
       }
     }
   }
-  
+
   END {
-    if ($ShowOfflineComputers) 
-    {
+    if ($ShowOfflineComputers -and $ErroredComputers) {
       Write-Output -InputObject ''
       Write-Output -InputObject 'Errors for Computers not able to connect.'
       Write-Output -InputObject $ErroredComputers
