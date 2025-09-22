@@ -10,7 +10,7 @@
 
 . $PSScriptRoot\Scripts\Add-NetworkPrinter.ps1 # removed: function deleted
 . $PSScriptRoot\Scripts\Compare-Folders.ps1
-. $PSScriptRoot\Scripts\Get-InstalledSoftware.ps1 # removed: function deleted
+# $PSScriptRoot\Scripts\Get-InstalledSoftware.ps1 # removed: function deleted
 # `Get-SystemUpTime` now provided by `Modules\SystemInfoModule.psm1`
 # Use `Import-Module "$PSScriptRoot\Modules\SystemInfoModule.psm1"` to load it when needed
 # New-TimeStampFileName was moved into Modules\LoggingModule.psm1
@@ -21,6 +21,8 @@
 # `Test-PrinterStatus` now provided by `Modules\PrintersModule.psm1`
 # Use `Import-Module "$PSScriptRoot\Modules\PrintersModule.psm1"` to load it when needed
 . $PSScriptRoot\Scripts\Test-Replication.ps1
+. "# Loading module: LaunchAdminPowerShellConsole"
+Import-Module "$PSScriptRoot\Modules\LaunchAdminPowerShellConsole.psm1" -Force -ErrorAction SilentlyContinue
 
 # SIG # Begin signature block
 # MIID/AYJKoZIhvcNAQcCoIID7TCCA+kCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
